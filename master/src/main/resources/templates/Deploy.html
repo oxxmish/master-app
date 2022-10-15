@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Freemium Hosting</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+</head>
+<body>
+<div th:insert ="header.html :: head"></div>
+
+  <section class="container" type="main" id="Деплой">
+    <nav>
+      <h1>Вставьте ссылку на ваш git-репозиторий:</h1>
+      <form method="POST" action="/api/createProject" th:object="${project}">
+        <input type="text" th:field="*{link}">
+        <input type="submit" value="Задеплоить проект">
+<!--        <p><button class="btn btn-default" type="submit">Задеплоить проект</button></p>-->
+      </form>
+    </nav>
+  </section>
+<div th:insert ="footer.html :: foot"></div>
+<script src="/js/dynamicHeader.js">
+
+</script>
+</body>
+</html>
