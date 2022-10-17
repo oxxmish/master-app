@@ -13,11 +13,28 @@
 
   <section class="container" type="main" id="Деплой">
     <nav>
-      <h1>Вставьте ссылку на ваш git-репозиторий:</h1>
+      <h1>Введите данные вашего проекта:</h1>
       <form method="POST" action="/api/createProject" th:object="${project}">
-        <input type="text" th:field="*{link}">
+        <br>
+        <label for="link">Название проекта:</label>
+        <input type="text" th:field="*{name}" id="name">
+        <br>
+        <br>
+        <label for="link">Ссылка на git-репозиторий:</label>
+        <input type="text" th:field="*{link}" id="link">
+        <br>
+        <br>
+        <label for="language">Язык программирования:</label>
+        <select  th:field="*{language}" id="language">
+          <option selected="selected" value="">Выберите язык программирования</option>
+          <option value="Java">Java</option>
+          <option value="Python">Python</option>
+          <option value="Groovy">Groovy</option>
+        </select>
+        <br>
+        <br>
         <input type="submit" value="Задеплоить проект">
-<!--        <p><button class="btn btn-default" type="submit">Задеплоить проект</button></p>-->
+
       </form>
     </nav>
   </section>
