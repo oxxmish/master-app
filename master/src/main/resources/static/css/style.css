@@ -116,8 +116,11 @@ body {
 }
 
 h1{
-  color: #00FFA2;
+  color: #b0d157;
   font-size: 18px;
+}
+label{
+  color: #b0d157;
 }
 
 .nav > li, .nav:active > .active {

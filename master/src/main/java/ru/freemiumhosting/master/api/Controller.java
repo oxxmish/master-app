@@ -1,33 +1,24 @@
 package ru.freemiumhosting.master.api;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.ProjectRep;
-import ru.freemiumhosting.master.repository.UserRep;
+import ru.freemiumhosting.master.service.DockerService;
 
 
-@Controller
+@org.springframework.stereotype.Controller
 @RequiredArgsConstructor
-public class DemoController {
+public class Controller {
 
-    private final UserRep userRep;
     private final ProjectRep projectRep;
-    private final DockerAPI dockerAPI;
-
-//    @PostMapping("/api/create")
-//    public String createTag(@RequestBody LinkRequest req) {
-//        User user = new User(req.getLink());
-//        userRep.save(user);
-//        return "Deploy";
-//    }
+    private final DockerService dockerService;
 
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute Project project) {
         projectRep.save(project);
-        dockerAPI.postLink(project.getLink());
+        dockerService.generateDockerFile(project);
         return "Projects";
     }
 
