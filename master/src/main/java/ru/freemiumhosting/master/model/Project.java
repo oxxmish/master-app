@@ -17,7 +17,6 @@ public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projects_generator")
     @SequenceGenerator(name = "projects_generator", sequenceName = "projects_seq", allocationSize = 500)
-    @Column(unique = true)
     private Long id;
     private String name;
     private String link;

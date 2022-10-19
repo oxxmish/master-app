@@ -1,0 +1,10 @@
+---
+freemium:
+  hosting:
+    git-clone-path: "C:\\Users\\Michail\\Desktop\\git_clone"
+    default-builder-path: "C:\\Users\\Michail\\Desktop\\builder\\dockerfile"
+    dockerfile:
+      builder-image: maven:3.6.3-jdk-14
+      workdir: /usr/src/app/backend
+      build-command: mvn install -DskipTests=true
+      java-image: openjdk:14-jdk
