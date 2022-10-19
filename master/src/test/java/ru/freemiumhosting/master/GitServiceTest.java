@@ -6,21 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ru.freemiumhosting.master.api.MainController;
-import ru.freemiumhosting.master.model.Project;
+import ru.freemiumhosting.master.service.impl.GitService;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles(profiles = "local")
-class MasterApplicationTests {
+public class GitServiceTest {
 
-	@Autowired
-	private MainController mainController;
-	@Test
-	void testDockerfileCreation() {
-		Project project = new Project();
-		project.setLink("https://github.com/freemium-hosting/master-app.git");
-		mainController.createProject(project);
-	}
+    @Autowired
+    private GitService gitService;
 
+    @Test
+    public void gitCloneTest() {
+        gitService.cloneGitRepo("https://github.com/freemium-hosting/master-app.git");
+    }
 }
