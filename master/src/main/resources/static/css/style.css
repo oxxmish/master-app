@@ -123,6 +123,11 @@ label{
   color: #b0d157;
 }
 
+table{
+  border-spacing: 6px 30px;
+  border-collapse: separate;
+}
+
 .nav > li, .nav:active > .active {
   float: left;
   position: relative;
