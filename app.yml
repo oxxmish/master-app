@@ -1,0 +1,9 @@
+# docker-compose для локального запуска приложения в докере
+services:
+  app:
+    build:
+      dockerfile: ./Dockerfile
+      args:
+        - JAR_FILE=./target/master-0.0.1-SNAPSHOT.jar
+        - APP_NAME=freemium-hosting
+#    environment:
