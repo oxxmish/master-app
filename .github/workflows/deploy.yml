@@ -1,78 +1,78 @@
-# This workflow will build a docker container, publish it to IBM Container Registry, and deploy it to IKS when there is a push to the "master" branch.
-#
-# To configure this workflow:
-#
-# 1. Ensure that your repository contains a Dockerfile
-# 2. Setup secrets in your repository by going to settings: Create ICR_NAMESPACE and IBM_CLOUD_API_KEY
-# 3. Change the values for the IBM_CLOUD_REGION, REGISTRY_HOSTNAME, IMAGE_NAME, IKS_CLUSTER, DEPLOYMENT_NAME, and PORT
-
-name: Build and Deploy to IKS
+name: Build and Deploy to K8s
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "ci" ] #TODO: change to main
 
 # Environment variables available to all jobs and steps in this workflow
 env:
   GITHUB_SHA: ${{ github.sha }}
-  IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
-  IBM_CLOUD_REGION: us-south
-  ICR_NAMESPACE: ${{ secrets.ICR_NAMESPACE }}
-  REGISTRY_HOSTNAME: us.icr.io
-  IMAGE_NAME: iks-test
-  IKS_CLUSTER: example-iks-cluster-name-or-id
+  IMAGE_NAME: freemium-hosting
+  REGISTRY_LOGIN: freemiumhosting
+  REGISTRY_PASSWORD: freemiumhosting
   DEPLOYMENT_NAME: iks-test
-  PORT: 5001
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  KUBE_CONFIG_PATH: /opt/app/kubeconfig.yml
+  HELM_IMAGE: alpine/helm
+  HELM_VERSION: 3.7.1
+  BUILD_PATH: /opt/build
+
+#  PORT: 5001
 
 jobs:
   build-jar:
-    name: Setup, Build, Publish, and Deploy
+    name: Build jar
     runs-on: ubuntu-latest
     environment: production
     container:
-      #      credentials:
-      #        username: ${{ github.actor }}
-      #        password: ${{ secrets.github_token }}
       image: maven:3.6.3-openjdk-11-slim
-      #      env:
-      #        NODE_ENV: development
       volumes:
-        - build:/opt/build
-    #      options: --cpus 1
+        - build:$BUILD_PATH
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      # Download and Install IBM Cloud CLI
       - name: Build jar
         run: mvn -DskipTests=true clean install
-        # Authenticate with IBM Cloud CLI
       - name: Copy artifact
-        run: cp ./target/*.jar /opt/build/app.jar
+        run: cp ./target/*.jar $BUILD_PATH/app.jar
 
-#TODO------------------------------------------------------
   build-docker:
+    name: Build docker
     runs-on: ubuntu-latest
     steps:
       # Build the Docker image
       - name: Build with Docker
-        run: |
-          docker build -t "$REGISTRY_HOSTNAME"/"$ICR_NAMESPACE"/"$IMAGE_NAME":"$GITHUB_SHA" \
-            --build-arg GITHUB_SHA="$GITHUB_SHA" \
-            --build-arg GITHUB_REF="$GITHUB_REF" .
+        run: docker build -t "$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" $BUILD_PATH
+      # Push the image to Registry
+      - name: Push the image to Registry
+        run: docker push $IMAGE_NAME:$GITHUB_SHA
 
-      # Push the image to IBM Container Registry
-      - name: Push the image to ICR
-        run: |
-          docker push $REGISTRY_HOSTNAME/$ICR_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA
+#  deploy-to-cluster:
+#    name: Deploy to cluster
+#    runs-on: ubuntu-latest
+#    container:
+#      image: ${HELM_IMAGE}:${HELM_VERSION}
+#    steps:
+#      - name: Write kubeconfig
+#        run: |
+#          echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}
+#          chmod 600 ${KUBE_CONFIG_PATH}
+#
+#        # Deploy the Docker image to the cluster
+#      - name: Deploy to K8S   #TODO: check vars
+#        run: |
+#          export DEPLOYS=$(helm ls -n ${NAMESPACE} --kubeconfig ${KUBE_CONFIG_PATH} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
+#          export HELM_KEYS="${APP} ./.helm/charts/${APP}
+#                --set image.name=${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${APP}
+#                --set image.tag=${VERSION}
+#                --set commitId=${CI_COMMIT_SHORT_SHA}
+#                -f $HELM_VALUES_DIR/common.yaml
+#                -f $HELM_VALUES_DIR/${APP}.yaml
+#                -f $HELM_VALUES_DIR/replicas/${APP}.yaml
+#                -n ${NAMESPACE}
+#                --kubeconfig ${KUBE_CONFIG_PATH}"
+#          if [ ${DEPLOYS}  -eq 0 ];
+#                then helm install $HELM_KEYS;
+#                else helm upgrade $HELM_KEYS;
+#          fi
 
-      # Deploy the Docker image to the IKS cluster
-      - name: Deploy to IKS
-        run: |
-          ibmcloud ks cluster config --cluster $IKS_CLUSTER
-          kubectl config current-context
-          kubectl create deployment $DEPLOYMENT_NAME --image=$REGISTRY_HOSTNAME/$ICR_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA --dry-run -o yaml > deployment.yaml
-          kubectl apply -f deployment.yaml
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
-          kubectl create service loadbalancer $DEPLOYMENT_NAME --tcp=80:$PORT --dry-run -o yaml > service.yaml
-          kubectl apply -f service.yaml
-          kubectl get services -o wide

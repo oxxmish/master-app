@@ -6,4 +6,7 @@ services:
       args:
         - JAR_FILE=./target/master-0.0.1-SNAPSHOT.jar
         - APP_NAME=freemium-hosting
-#    environment:
+    volumes:
+      - "./testdb.db:/opt/app/db/testdb"
+    environment:
+      - "DB_URL=jdbc:h2:file:/opt/app/db/testdb"

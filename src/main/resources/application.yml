@@ -8,7 +8,7 @@ spring:
   mvc:
     static-path-pattern: /**
   datasource:
-    url: ${DB_URL:jdbc:h2:mem:testdb}
+    url: ${DB_URL:jdbc:h2:file:./testdb}
     username: ${DB_USERNAME:user}
     password: ${DB_PASS:12345}
     driver-class-name: org.h2.Driver
