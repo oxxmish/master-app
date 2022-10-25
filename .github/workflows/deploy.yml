@@ -37,6 +37,8 @@ jobs:
   build-docker:
     name: Build docker
     runs-on: ubuntu-latest
+    needs:
+      - build-jar
     steps:
       # Build the Docker image
       - name: Build with Docker
@@ -47,6 +49,8 @@ jobs:
 
 #  deploy-to-cluster:
 #    name: Deploy to cluster
+#    needs:
+#      - build-docker
 #    runs-on: ubuntu-latest
 #    container:
 #      image: ${HELM_IMAGE}:${HELM_VERSION}
