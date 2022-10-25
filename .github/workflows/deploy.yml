@@ -6,18 +6,16 @@ on:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  GITHUB_SHA: ${{ github.sha }}
-  IMAGE_NAME: freemium-hosting
-  REGISTRY_LOGIN: freemiumhosting
-  REGISTRY_PASSWORD: freemiumhosting
-  DEPLOYMENT_NAME: iks-test
-  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   KUBE_CONFIG_PATH: /opt/app/kubeconfig.yml
   HELM_IMAGE: alpine/helm
   HELM_VERSION: 3.7.1
   BUILD_PATH: /opt/build
+  GITHUB_SHA: ${{ github.sha }}
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
-#  PORT: 5001
 
 jobs:
   build-jar:
@@ -42,10 +40,10 @@ jobs:
     steps:
       # Build the Docker image
       - name: Build with Docker
-        run: docker build -t "$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" $BUILD_PATH
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" "$BUILD_PATH"
       # Push the image to Registry
       - name: Push the image to Registry
-        run: docker push $IMAGE_NAME:$GITHUB_SHA
+        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA"
 
 #  deploy-to-cluster:
 #    name: Deploy to cluster
