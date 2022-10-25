@@ -25,7 +25,7 @@ jobs:
     container:
       image: maven:3.6.3-openjdk-11-slim
       volumes:
-        - build:$BUILD_PATH
+        - build:/opt/build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
