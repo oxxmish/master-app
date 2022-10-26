@@ -51,7 +51,7 @@ jobs:
           path: ./app.jar
       # Build the Docker image
       - name: Docker Login
-        run: docker login --username="$REGISTRY_LOGIN" --email="$REGISTRY_PASSWORD"
+        run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
         run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" .
       # Push the image to Registry
