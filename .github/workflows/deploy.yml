@@ -9,8 +9,6 @@ env:
   KUBE_CONFIG_PATH: /opt/app/kubeconfig.yml
   HELM_IMAGE: alpine/helm
   HELM_VERSION: 3.7.1
-  JAR_PATH: /opt/build/app.jar
-  ARTIFACT_NAME: builded-jar
   GITHUB_SHA: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
@@ -37,8 +35,8 @@ jobs:
       - name: Save artifact
         uses: actions/upload-artifact@v3
         with:
-          name: $ARTIFACT_NAME
-          path: $JAR_PATH
+          name: builded-jar
+          path: /opt/build/app.jar
 
   build-docker:
     name: Build docker
@@ -49,7 +47,7 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v3
         with:
-          name: $ARTIFACT_NAME
+          name: builded-jar
           path: ./app.jar
 #      - name: Copy artifact
 #        run: cp "$JAR_PATH" ./app.jar
