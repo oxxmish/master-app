@@ -36,7 +36,7 @@ jobs:
       - name: Save artifact
         uses: actions/upload-artifact@v3
         with:
-          name: builded-jar
+          name: app.jar
           path: /opt/build/app.jar
 
   build-docker:
@@ -45,10 +45,12 @@ jobs:
     needs:
       - build-jar
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Download jar
         uses: actions/download-artifact@v3
         with:
-          name: builded-jar
+          name: app.jar
           path: ./app.jar
 #      - name: Copy artifact
 #        run: cp "$JAR_PATH" ./app.jar
@@ -67,6 +69,8 @@ jobs:
 #    container:
 #      image: ${HELM_IMAGE}:${HELM_VERSION}
 #    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
 #      - name: Write kubeconfig
 #        run: |
 #          echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}
