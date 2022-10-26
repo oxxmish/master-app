@@ -14,7 +14,6 @@ env:
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-  JAR_PATH: /opt/build/app.jar
 
 
 jobs:
@@ -24,20 +23,18 @@ jobs:
     environment: production
     container:
       image: maven:3.6.3-openjdk-11-slim
-      volumes:
-        - build:/opt/build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build jar
         run: mvn -DskipTests=true clean install
       - name: Copy artifact
-        run: cp ./target/*.jar $JAR_PATH
+        run: cp ./target/*.jar ./app.jar
       - name: Save artifact
         uses: actions/upload-artifact@v3
         with:
           name: app.jar
-          path: /opt/build/app.jar
+          path: ./app.jar
 
   build-docker:
     name: Build docker
@@ -52,13 +49,13 @@ jobs:
         with:
           name: app.jar
           path: ./app.jar
-#      - name: Copy artifact
-#        run: cp "$JAR_PATH" ./app.jar
       # Build the Docker image
+      - name: Docker Login
+        run: docker login --username="$REGISTRY_LOGIN" --email="$REGISTRY_PASSWORD"
       - name: Build with Docker
         run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" .
       # Push the image to Registry
-      - name: Push the image to Registry
+      - name: Push the image to Registry #TODO: login
         run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA"
 
 #  deploy-to-cluster:
