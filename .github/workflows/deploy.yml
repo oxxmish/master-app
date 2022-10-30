@@ -76,15 +76,13 @@ jobs:
 #        # Deploy the Docker image to the cluster
 #      - name: Deploy to K8S   #TODO: check vars
 #        run: |
-#          export DEPLOYS=$(helm ls -n ${NAMESPACE} --kubeconfig ${KUBE_CONFIG_PATH} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
+#          export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
 #          export HELM_KEYS="${APP} ./.helm/charts/${APP}
 #                --set image.name=${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${APP}
 #                --set image.tag=${VERSION}
 #                --set commitId=${CI_COMMIT_SHORT_SHA}
-#                -f $HELM_VALUES_DIR/common.yaml
-#                -f $HELM_VALUES_DIR/${APP}.yaml
-#                -f $HELM_VALUES_DIR/replicas/${APP}.yaml
 #                -n ${NAMESPACE}
+#                --generate-name
 #                --kubeconfig ${KUBE_CONFIG_PATH}"
 #          if [ ${DEPLOYS}  -eq 0 ];
 #                then helm install $HELM_KEYS;

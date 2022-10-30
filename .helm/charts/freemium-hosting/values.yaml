@@ -5,7 +5,7 @@ image:
   name: freemiumhosting/freemium-hosting-platform
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -34,8 +34,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: NodeIP
-  port: 80
+  type: NodePort
+  port: 30080
 
 ingress:
   enabled: false
