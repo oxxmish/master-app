@@ -55,7 +55,7 @@ jobs:
       - name: Docker Login
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
-        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$TAG" --build-arg GITHUB_SHA="$GITHUB_SHA" .
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$TAG" .
       # Push the image to Registry
       - name: Push the image to Registry
         run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$TAG"
