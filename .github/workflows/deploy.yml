@@ -29,7 +29,7 @@ jobs:
       - name: Build jar
         run: mvn -DskipTests=true clean install
       - name: Copy artifact
-        run: cp ./target/*.jar ./app.jar
+        run: cp ./target/master-0.0.1-SNAPSHOT.jar ./app.jar
       - name: Save artifact
         uses: actions/upload-artifact@v3
         with:
@@ -37,6 +37,8 @@ jobs:
           path: ./app.jar
 
   build-docker:
+    env:
+      TAG: $GITHUB_SHA
     name: Build docker
     runs-on: ubuntu-latest
     needs:
@@ -47,16 +49,16 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v3
         with:
-          name: app.jar
+          name: app.jar #TODO: fix artifact
           path: ./app.jar
       # Build the Docker image
       - name: Docker Login
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
-        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA" --build-arg GITHUB_SHA="$GITHUB_SHA" .
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$TAG" --build-arg GITHUB_SHA="$GITHUB_SHA" .
       # Push the image to Registry
-      - name: Push the image to Registry #TODO: login
-        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA"
+      - name: Push the image to Registry
+        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$TAG"
 
 #  deploy-to-cluster:
 #    name: Deploy to cluster
