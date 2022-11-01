@@ -20,10 +20,12 @@ public class Project {
     private Long id;
     private String name;
     private String link;
-    private String status;
-
+    private String branch;
+    private String status = "Проект запущен успешно";//TODO change
     private String language;
-    
+
+    private Boolean launchedByUser = true;//TODO change
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

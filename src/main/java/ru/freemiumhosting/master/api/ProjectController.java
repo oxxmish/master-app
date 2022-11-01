@@ -11,7 +11,7 @@ import ru.freemiumhosting.master.service.ProjectService;
 
 @Controller
 @RequiredArgsConstructor
-public class MainController {
+public class ProjectController {
 
     private final ProjectRep projectRep;
     private final ProjectService projectService;
@@ -19,13 +19,22 @@ public class MainController {
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute Project project) {
         projectRep.save(project);
-        projectService.createProject(project);
-        return "Projects";
+        //projectService.createProject(project);
+        return "redirect:/projects";
+    }
+
+    @PostMapping("/api/updateProject")
+    public String updateProject(@ModelAttribute Project project,
+                                @ModelAttribute("launch") String launch) {
+        project.setLBU(launch);
+        projectRep.save(project);
+        //projectService.createProject(project);
+        return "redirect:/projects";
     }
 
     @GetMapping("/deploy")
     public String startDeploy(Model model) {
-        model.addAttribute("project",new Project());
+        model.addAttribute("project", new Project());
         return "Deploy";
     }
 
@@ -34,8 +43,10 @@ public class MainController {
         return "Projects";
     }
 
-    @GetMapping("/profile")
-    public String getProfile(Model model) {
-        return "Profile";
+    @GetMapping("/projects/{projectId}")
+    public String getProjectById(Model model, @PathVariable Long projectId) {
+        Project project = projectRep.findProjectById(projectId);
+        model.addAttribute("project", project);
+        return "Project";
     }
 }

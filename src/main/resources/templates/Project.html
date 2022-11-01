@@ -11,11 +11,24 @@
 <body>
 <div th:insert ="header.html :: head"></div>
 
-  <section class="container" type="main" id="Деплой">
+  <section class="container" type="main" id="Проекты">
     <nav>
-      <h1>Введите данные вашего проекта:</h1>
-      <form method="POST" action="/api/createProject" th:object="${project}">
+      <h1>Настройки вашего проекта:</h1>
+      <form method="POST" action="/api/updateProject" th:object="${project}">
         <table >
+          <tr>
+            <td ><label for="status">Статус проекта:</label></td>
+            <td><h1 th:text="*{status}" id="status"></h1></td>
+          </tr>
+          <tr>
+            <td ><label for="launchedByUser">Запустить/Приостановить деплой:</label></td>
+            <td>
+             <label class="switch">
+                <input type="checkbox"  id="launchedByUser" th:checked="*{launchedByUser}">
+                <span class="slider round"></span>
+              </label>
+            </td>
+          </tr>
           <tr>
             <td ><label for="name">Название проекта:</label></td>
             <td><input type="text" th:field="*{name}" id="name"></td>
@@ -25,7 +38,7 @@
             <td><input type="text" th:field="*{link}" id="link"></td>
           </tr>
           <tr>
-            <td><label for="branch">Имя ветки</label></td>
+            <td><label for="branch">Имя ветки:</label></td>
             <td><input type="text" th:field="*{branch}" id="branch"></td>
           </tr>
           <tr>
@@ -39,15 +52,17 @@
           </tr>
           <tr>
             <td></td>
-            <td><input type="submit" value="Задеплоить проект"></td>
+            <td><input type="submit" value="Сохранить изменения" ></td>
           </tr>
         </table>
+        <input type="hidden" th:field="*{id}" id="id">
       </form>
     </nav>
   </section>
 <div th:insert ="footer.html :: foot"></div>
-<script src="/js/dynamicHeader.js">
 
-</script>
+<script src="/js/verifyCheckboxes.js"></script>
+<script src="/js/dynamicHeader.js"></script>
+
 </body>
 </html>
