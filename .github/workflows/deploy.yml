@@ -7,8 +7,8 @@ on:
 # Environment variables available to all jobs and steps in this workflow
 env:
   KUBE_CONFIG_PATH: /opt/app/kubeconfig.yml
-  HELM_IMAGE: alpine/helm
-  HELM_VERSION: 3.7.1
+#  HELM_IMAGE: alpine/helm
+#  HELM_VERSION: 3.7.1
   GITHUB_SHA: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
@@ -66,7 +66,7 @@ jobs:
       - build-docker
     runs-on: ubuntu-latest
     container:
-      image: ${HELM_IMAGE}:${HELM_VERSION}
+      image: alpine/helm:3.7.1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
