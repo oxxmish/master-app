@@ -6,7 +6,8 @@ on:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  KUBE_CONFIG_PATH: /opt/app/kubeconfig.yml
+  KUBE_CONFIG_PATH: /opt/app/
+  KUBE_CONF_FILE: kubeconfig.yml
 #  HELM_IMAGE: alpine/helm
 #  HELM_VERSION: 3.7.1
   GITHUB_SHA: ${{ github.sha }}
@@ -72,14 +73,15 @@ jobs:
         uses: actions/checkout@v3
       - name: Write kubeconfig
         run: |
-          echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}
-          chmod 600 ${KUBE_CONFIG_PATH}
+          mkdir -r ${KUBE_CONFIG_PATH}
+          echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
+          chmod 600 ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
 
         # Deploy the Docker image to the cluster
       - name: Deploy to K8S   #TODO: check vars
         run: |
-          export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
-          export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${VERSION} --kubeconfig ${KUBE_CONFIG_PATH}"
+          export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
+          export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${VERSION} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
           if [ ${DEPLOYS}  -eq 0 ];
                 then helm install --generate-name $HELM_KEYS;
                 else helm upgrade $HELM_KEYS;
