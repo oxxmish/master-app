@@ -1,7 +1,35 @@
 server:
   port: ${SERVER_PORT:8080}
 
-#TODO add kuber probes
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: [ "configprops", "env", "health", "info", "threaddump", "logfile" ]
+  endpoint:
+    jhi-metrics:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      group:
+        liveness.include: livenessState #,diskSpace
+        readiness.include: readinessState,livenessState,db #,diskSpace
+  info:
+    git:
+      mode: full
+  health:
+    probes:
+      enabled: true
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    mail:
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
+
 
 spring:
   h2:

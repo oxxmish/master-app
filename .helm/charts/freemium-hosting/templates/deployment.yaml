@@ -38,25 +38,25 @@ spec:
               containerPort: {{ .Values.application.port }}
               protocol: TCP
           livenessProbe:
+            failureThreshold: 3
             httpGet:
-              path: /
-              port: http
+              path: /management/health/liveness
+              port: {{ .Values.application.port }}
               scheme: HTTP
-            initialDelaySeconds: 300
+            initialDelaySeconds: 50
             periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 30
-            failureThreshold: 5
           readinessProbe:
+            failureThreshold: 10
             httpGet:
-              path: /
-              port: http
+              path: /management/health/readiness
+              port: {{ .Values.application.port }}
               scheme: HTTP
-            initialDelaySeconds: 240
-            periodSeconds: 15
+            initialDelaySeconds: 50
+            periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 30
-            failureThreshold: 5
+            timeoutSeconds: 60
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
