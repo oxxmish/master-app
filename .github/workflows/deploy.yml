@@ -84,7 +84,7 @@ jobs:
           export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
           export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${VERSION} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
           if [ ${DEPLOYS}  -eq 0 ];
-                then helm install --generate-name $HELM_KEYS;
+                then helm install $HELM_KEYS;
                 else helm upgrade $HELM_KEYS;
           fi
 
