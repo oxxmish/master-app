@@ -38,4 +38,10 @@ public class MainController {
     public String getProfile(Model model) {
         return "Profile";
     }
+
+
+    @GetMapping("/")
+    public String index(Model model) {
+        return "Index";
+    }
 }
