@@ -11,7 +11,7 @@ env:
 #  HELM_IMAGE: alpine/helm
 #  HELM_VERSION: 3.7.1
   APP: freemium-hosting
-  GITHUB_SHA: ${{ github.sha }}
+  IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
@@ -40,7 +40,7 @@ jobs:
 
   build-docker:
 #    env:
-#      TAG: $GITHUB_SHA
+#      TAG: $IMAGE_TAG
     name: Build docker
     runs-on: ubuntu-latest
     needs:
@@ -57,10 +57,10 @@ jobs:
       - name: Docker Login
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
-        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA" .
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" .
       # Push the image to Registry
       - name: Push the image to Registry
-        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$GITHUB_SHA"
+        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG"
 
   deploy-to-cluster:
     name: Deploy to cluster
@@ -82,7 +82,7 @@ jobs:
       - name: Deploy to K8S   #TODO: check vars
         run: |
           export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
-          export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${VERSION} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
+          export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${IMAGE_TAG} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
           if [ ${DEPLOYS}  -eq 0 ];
                 then helm install $HELM_KEYS;
                 else helm upgrade $HELM_KEYS;
