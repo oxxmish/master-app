@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Write kubeconfig
         run: |
-          mkdir -r ${KUBE_CONFIG_PATH}
+          mkdir -p ${KUBE_CONFIG_PATH}
           echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
           chmod 600 ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
 
