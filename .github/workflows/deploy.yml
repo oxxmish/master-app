@@ -10,6 +10,7 @@ env:
   KUBE_CONF_FILE: kubeconfig.yml
 #  HELM_IMAGE: alpine/helm
 #  HELM_VERSION: 3.7.1
+  APP: freemium-hosting
   GITHUB_SHA: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
