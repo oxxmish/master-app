@@ -1,5 +1,35 @@
 server:
-  port: ${PORT:8080}
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: [ "configprops", "env", "health", "info", "threaddump", "logfile" ]
+  endpoint:
+    jhi-metrics:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      group:
+        liveness.include: livenessState #,diskSpace
+        readiness.include: readinessState,livenessState,db #,diskSpace
+  info:
+    git:
+      mode: full
+  health:
+    probes:
+      enabled: true
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    mail:
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
+
 
 spring:
   h2:
@@ -8,7 +38,7 @@ spring:
   mvc:
     static-path-pattern: /**
   datasource:
-    url: ${DB_URL:jdbc:h2:mem:testdb}
+    url: ${DB_URL:jdbc:h2:file:./testdb}
     username: ${DB_USERNAME:user}
     password: ${DB_PASS:12345}
     driver-class-name: org.h2.Driver
@@ -17,3 +47,12 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+freemium:
+  hosting:
+    git-clone-path: ${GIT_CLONE_TEMP_PATH:./tmp/git-clone}
+    default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/builder}
+    dockerfile:
+      builder-image: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-14} #TODO: change version
+      workdir: ${DOCKER_BUILD_WORKDIE:/usr/src/app/backend}
+      build-command: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
+      java-image: ${JAVA_RUN_IMAGE:openjdk:14-jdk} #TODO: change to jre

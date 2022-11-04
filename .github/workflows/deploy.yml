@@ -1,0 +1,90 @@
+name: Build and Deploy to K8s
+
+on:
+  push:
+    branches: [ "ci" ] #TODO: change to main
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  KUBE_CONFIG_PATH: /opt/app/
+  KUBE_CONF_FILE: kubeconfig.yml
+#  HELM_IMAGE: alpine/helm
+#  HELM_VERSION: 3.7.1
+  APP: freemium-hosting
+  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+
+jobs:
+  build-jar:
+    name: Build jar
+    runs-on: ubuntu-latest
+    environment: production
+    container:
+      image: maven:3.6.3-openjdk-11-slim
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build jar
+        run: mvn -DskipTests=true clean install
+      - name: Copy artifact
+        run: cp ./target/master-0.0.1-SNAPSHOT.jar ./app.jar
+      - name: Save artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app.jar
+          path: ./app.jar
+
+  build-docker:
+#    env:
+#      TAG: $IMAGE_TAG
+    name: Build docker
+    runs-on: ubuntu-latest
+    needs:
+      - build-jar
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download jar
+        uses: actions/download-artifact@v3
+        with:
+          name: app.jar #TODO: fix artifact
+#          path: ./app.jar
+      # Build the Docker image
+      - name: Docker Login
+        run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
+      - name: Build with Docker
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" .
+      # Push the image to Registry
+      - name: Push the image to Registry
+        run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG"
+
+  deploy-to-cluster:
+    name: Deploy to cluster
+    needs:
+      - build-docker
+    runs-on: ubuntu-latest
+    container:
+      image: alpine/helm:3.7.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Write kubeconfig
+        run: |
+          mkdir -p ${KUBE_CONFIG_PATH}
+          echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
+          chmod 600 ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
+
+        # Deploy the Docker image to the cluster
+      - name: Deploy to K8S   #TODO: check vars
+        run: |
+          export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
+          export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${IMAGE_TAG} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
+          if [ ${DEPLOYS}  -eq 0 ];
+                then helm install $HELM_KEYS;
+                else helm upgrade $HELM_KEYS;
+          fi
+

@@ -44,4 +44,10 @@ public class ProjectController {
         //model.addAttribute("launch", "ЭТАП 1");
         return "Project";
     }
+
+
+    @GetMapping("/")
+    public String index(Model model) {
+        return "Index";
+    }
 }

@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 @Service
 @RequiredArgsConstructor
 public class DockerfileBuilderService {
+    //TODO: extract following to configuration-properties
     @Value("${freemium.hosting.default-builder-path}")
     private String DOCKERFILE_PATH;
     @Value("${freemium.hosting.dockerfile.builder-image}")
