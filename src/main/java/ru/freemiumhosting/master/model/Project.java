@@ -20,10 +20,12 @@ public class Project {
     private Long id;
     private String name;
     private String link;
-    private String status;
-
+    private String branch;
+    private String status = "Деплой проекта запущен успешно";//TODO change
     private String language;
-    
+    private String lastLaunch = "true";
+    private String currentLaunch = "true";
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -37,5 +39,19 @@ public class Project {
 
     public Project(String link) {
         this.link = link;
+    }
+
+    public Boolean userStartsDeploy() {
+        if (lastLaunch.equals("false") && currentLaunch.equals("true"))
+            return true;
+        else
+            return false;
+    }
+
+    public Boolean userFinishesDeploy() {
+        if (lastLaunch.equals("true") && currentLaunch.equals("false"))
+            return true;
+        else
+            return false;
     }
 }
