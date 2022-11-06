@@ -47,12 +47,15 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+
 freemium:
   hosting:
     git-clone-path: ${GIT_CLONE_TEMP_PATH:./tmp/git-clone}
     default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/builder}
     dockerfile:
-      builder-image: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-14} #TODO: change version
-      workdir: ${DOCKER_BUILD_WORKDIE:/usr/src/app/backend}
-      build-command: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
-      java-image: ${JAVA_RUN_IMAGE:openjdk:14-jdk} #TODO: change to jre
+      workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}
+      images:
+        java:
+          builder-image: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-14} #TODO: change version
+          build-command: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
+          java-image: ${JAVA_RUN_IMAGE:openjdk:14-jdk} #TODO: change to jre
