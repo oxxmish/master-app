@@ -1,16 +1,15 @@
 package ru.freemiumhosting.master.service.impl;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.properties.DockerBuildParams;
 import ru.freemiumhosting.master.properties.DockerfilesProperties;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
@@ -28,17 +27,36 @@ public class DockerfileBuilderService {
         Files.write(path, dockerfileString.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String generateDockerFileString(DockerBuildParams dockerBuildParams, String jarName, String runArgs) {
+    private String generateDockerFileString(DockerBuildParams dockerBuildParams, String executableName,
+                                            String runArgs) {
         StringBuilder builder = new StringBuilder();
-        builder.append("FROM ").append(dockerBuildParams.getBuilderImage()).append(" as builder\n")
+        addBuilderStageIfNeed(dockerBuildParams, builder);
+        builder
+            .append("FROM ").append(dockerBuildParams.getRunnerImage()).append("\n")
+            .append("WORKDIR ").append(dockerfilesProperties.getWorkdir()).append("\n");
+        //TODO убрать захардкоженный target
+        addCopy(dockerBuildParams, executableName, builder);
+        builder.append("ENTRYPOINT ").append("java -jar ").append(executableName).append(" ").append(runArgs);
+        return builder.toString();
+    }
+
+    private void addCopy(DockerBuildParams dockerBuildParams, String jarName,
+                         StringBuilder builder) {
+        if (dockerBuildParams.hasBuilderImage()) {
+            builder.append("COPY --from=builder ").append(dockerfilesProperties.getWorkdir())
+                .append("/target/").append(jarName).append("\n");
+        } else {
+            builder.append("COPY . ").append(dockerfilesProperties.getWorkdir()).append("\n");
+        }
+    }
+
+    private void addBuilderStageIfNeed(DockerBuildParams dockerBuildParams, StringBuilder builder) {
+        if (dockerBuildParams.hasBuilderImage()) {
+            builder.append("FROM ").append(dockerBuildParams.getBuilderImage())
+                .append(" as builder\n")
                 .append("COPY . ").append(dockerfilesProperties.getWorkdir()).append("\n")
                 .append("WORKDIR ").append(dockerfilesProperties.getWorkdir()).append("\n")
-                .append("RUN ").append(dockerBuildParams.getBuildCommand()).append("\n")
-                .append("FROM ").append(dockerBuildParams.getJavaImage()).append("\n")
-                .append("WORKDIR ").append(dockerfilesProperties.getWorkdir()).append("\n")
-                //TODO убрать захардкоженный target
-                .append("COPY --from=builder ").append(dockerfilesProperties.getWorkdir()).append("/target/").append(jarName).append("\n")
-                .append("ENTRYPOINT java -jar ").append(jarName).append(" ").append(runArgs);
-        return builder.toString();
+                .append("RUN ").append(dockerBuildParams.getBuildCommand()).append("\n");
+        }
     }
 }

@@ -26,7 +26,7 @@ public class ProjectServiceImpl implements ProjectService {
         //TODO сделать автоматический поиск помника
         String jarFileName = builderInfoService.getJarFileName(clonePath + "\\master");
         //TODO понять откуда брать параметры запуска
-        dockerfileBuilderService.createDockerFile(project.getLanguage(), jarFileName, "-Dserver.port=8081");
+        dockerfileBuilderService.createDockerFile(project.getLanguage(), jarFileName, "");
         projectRep.save(project);
     }
 

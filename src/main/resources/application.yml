@@ -56,6 +56,6 @@ freemium:
       workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}
       images:
         java:
-          builder-image: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-14} #TODO: change version
+          builder-image: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-11} #TODO: change version
           build-command: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
-          java-image: ${JAVA_RUN_IMAGE:openjdk:14-jdk} #TODO: change to jre
+          runner-image: ${JAVA_RUN_IMAGE:openjdk:11.0.16-jre} #TODO: change to jre
