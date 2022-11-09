@@ -13,10 +13,11 @@ import java.io.File;
 @RequiredArgsConstructor
 public class MavenInfoService implements BuilderInfoService {
     private final XmlMapper xmlMapper;
+
     @Override
     @SneakyThrows
     public String getJarFileName(String pathToPom) {
         PomXmlStructure pomXmlStructure = xmlMapper.readValue(new File(pathToPom + "\\pom.xml"), PomXmlStructure.class);
-        return pomXmlStructure.groupId + pomXmlStructure.artifactId + pomXmlStructure.version + ".jar";
+        return pomXmlStructure.groupId + pomXmlStructure.artifactId + pomXmlStructure.version + ".jar"; //TODO: имя выходного файла может быть переопределено средствами плагина, лучше просто искать jarник в target
     }
 }
