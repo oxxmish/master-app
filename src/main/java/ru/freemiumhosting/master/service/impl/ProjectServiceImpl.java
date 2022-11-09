@@ -23,10 +23,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void createProject(Project project) {
         gitService.cloneGitRepo(project.getLink());
-        //TODO сделать автоматический поиск помника
-        String jarFileName = builderInfoService.getJarFileName(clonePath + "\\master");
-        //TODO понять откуда брать параметры запуска
-        dockerfileBuilderService.createJavaDockerFile(jarFileName, "-Dserver.port=8081");
+        String jarFileName = builderInfoService.getJarFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
+        dockerfileBuilderService.createJavaDockerFile(jarFileName, "");
         projectRep.save(project);
     }
 

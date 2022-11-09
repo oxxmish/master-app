@@ -16,6 +16,7 @@ class MasterApplicationTests {
 
 	@Autowired
 	private ProjectController projectController;
+
 	@Test
 	void testDockerfileCreation() {
 		Project project = new Project();

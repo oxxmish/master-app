@@ -32,7 +32,7 @@ public class DockerfileBuilderService {
         Files.write(path, dockerfileString.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String generateJavaDockerFileString(String jarName, String runArgs) {
+    String generateJavaDockerFileString(String jarName, String runArgs) {
         StringBuilder builder = new StringBuilder();
         builder.append("FROM ").append(BUILDER_IMAGE).append(" as builder\n")
                 .append("COPY . ").append(WORKDIR).append("\n")
