@@ -1,30 +1,44 @@
 package ru.freemiumhosting.master.service.impl;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Collection;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.ProjectRep;
-import ru.freemiumhosting.master.service.BuilderInfoService;
+import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
 import ru.freemiumhosting.master.service.ProjectService;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-    @Value("${freemium.hosting.git-clone-path}")
-    private String clonePath;
+        private final String clonePath;
     private final GitService gitService;
     private final DockerfileBuilderService dockerfileBuilderService;
-    private final BuilderInfoService builderInfoService;
+    // key - language, value - BuilderInfoService
+    private final Map<String, BuilderInfoService> builderInfoServices;
     private final ProjectRep projectRep;
+
+    public ProjectServiceImpl(@Value("${freemium.hosting.git-clone-path}")String clonePath,
+                              GitService gitService,
+                              DockerfileBuilderService dockerfileBuilderService,
+                              Collection<BuilderInfoService> builderInfoServices, ProjectRep projectRep) {
+        this.clonePath = clonePath;
+        this.gitService = gitService;
+        this.dockerfileBuilderService = dockerfileBuilderService;
+        this.builderInfoServices = builderInfoServices.stream().collect(Collectors.toMap(builderInfoService ->
+                builderInfoService.supportedLanguage().toLowerCase(Locale.ROOT), s -> s));
+        this.projectRep = projectRep;
+    }
 
     @Override
     public void createProject(Project project) {
         gitService.cloneGitRepo(project.getLink());
-        String jarFileName = builderInfoService.getJarFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
-        dockerfileBuilderService.createDockerFile(project.getLanguage(), jarFileName, "");
+        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT)).getExecutableFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
+        dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "");
         projectRep.save(project);
     }
 

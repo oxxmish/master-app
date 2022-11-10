@@ -11,5 +11,5 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "freemium.hosting.dockerfile")
 public class DockerfilesProperties {
     private String workdir;
-    private Map<String, DockerBuildParams> images;
+    private Map<String, Map<String, String>> imageParams;
 }
