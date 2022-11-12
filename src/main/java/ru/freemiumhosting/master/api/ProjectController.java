@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
+import java.util.List;
 
 
 @Controller
@@ -34,6 +35,8 @@ public class ProjectController {
 
     @GetMapping("/projects")
     public String getProjects(Model model) {
+        List<Project> projects = projectService.getAllProjects();
+        model.addAttribute("projects", projects);
         return "Projects";
     }
 
@@ -41,7 +44,6 @@ public class ProjectController {
     public String getProjectById(Model model, @PathVariable Long projectId) {
         Project project = projectService.findProjectById(projectId);
         model.addAttribute("project", project);
-        //model.addAttribute("launch", "ЭТАП 1");
         return "Project";
     }
 
