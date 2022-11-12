@@ -10,6 +10,6 @@ public interface ProjectService {
     void deployProject(Project project);
     void updateProject(Project project);
     Project getProjectDetails(Long projectId);
-    List<Project> getAllProjects(Long projectId);
+    List<Project> getAllProjects();
     Project findProjectById(Long projectId);
 }
