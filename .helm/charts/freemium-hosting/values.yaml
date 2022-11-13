@@ -74,3 +74,18 @@ affinity: {}
 
 application:
   port: 8080
+
+db:
+  name: freemium-hosting-db
+  secretName: freemium-hosting-db-secret
+  userField: userName
+  passwordField: password
+  persistence:
+    enabled: true
+    claimName: db-pvc
+    pvName: db-pv
+    storageClass: local-storage
+    accessMode: ReadWriteOnce
+    size: 15M
+    hostPath: "/mnt/data"
+    mountPath: "/opt/app/"

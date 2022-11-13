@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
-        private final String clonePath;
+    private final String clonePath;
     private final GitService gitService;
     private final DockerfileBuilderService dockerfileBuilderService;
     // key - language, value - BuilderInfoService

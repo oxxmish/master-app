@@ -33,6 +33,20 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.name }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.secretName }}
+                  key: {{ .Values.db.userField | quote}}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.secretName }}
+                  key: {{ .Values.db.passwordField | quote}}
+          envFrom:
+          - configMapRef:
+              name: {{ include "freemium-hosting.fullname" . }}-env
           ports:
             - name: http
               containerPort: {{ .Values.application.port }}
@@ -59,6 +73,9 @@ spec:
             timeoutSeconds: 60
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ .Values.db.persistence.claimName }}
+              mountPath: {{ .Values.db.persistence.mountPath }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -71,3 +88,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: {{ .Values.db.persistence.claimName }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.db.persistence.claimName }}
