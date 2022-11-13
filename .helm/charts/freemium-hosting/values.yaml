@@ -88,4 +88,4 @@ db:
     accessMode: ReadWriteOnce
     size: 15M
     hostPath: "/mnt/data"
-    mountPath: "/opt/app/"
+    mountPath: "/opt/data/"

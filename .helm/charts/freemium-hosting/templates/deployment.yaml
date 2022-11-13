@@ -57,7 +57,7 @@ spec:
               path: /management/health/liveness
               port: {{ .Values.application.port }}
               scheme: HTTP
-            initialDelaySeconds: 50
+            initialDelaySeconds: 30
             periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 30
@@ -67,7 +67,7 @@ spec:
               path: /management/health/readiness
               port: {{ .Values.application.port }}
               scheme: HTTP
-            initialDelaySeconds: 50
+            initialDelaySeconds: 40
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 60
