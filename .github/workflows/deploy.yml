@@ -8,8 +8,6 @@ on:
 env:
   KUBE_CONFIG_PATH: /opt/app/
   KUBE_CONF_FILE: kubeconfig.yml
-#  HELM_IMAGE: alpine/helm
-#  HELM_VERSION: 3.7.1
   APP: freemium-hosting
   IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
@@ -39,8 +37,6 @@ jobs:
           path: ./app.jar
 
   build-docker:
-#    env:
-#      TAG: $IMAGE_TAG
     name: Build docker
     runs-on: ubuntu-latest
     needs:
@@ -51,13 +47,14 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v3
         with:
-          name: app.jar #TODO: fix artifact
-#          path: ./app.jar
+          name: app.jar
       # Build the Docker image
       - name: Docker Login
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
-        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" .
+        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" \
+            --build-arg REGISTRY_LOGIN="$REGISTRY_LOGIN" \
+            --build-arg REGISTRY_PASSWORD="$REGISTRY_PASSWORD" .
       # Push the image to Registry
       - name: Push the image to Registry
         run: docker push "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG"
@@ -77,9 +74,8 @@ jobs:
           mkdir -p ${KUBE_CONFIG_PATH}
           echo "${KUBE_CONFIG}" > ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
           chmod 600 ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}
-
         # Deploy the Docker image to the cluster
-      - name: Deploy to K8S   #TODO: check vars
+      - name: Deploy to K8S
         run: |
           export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
           export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${IMAGE_TAG} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
