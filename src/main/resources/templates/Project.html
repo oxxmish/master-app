@@ -15,7 +15,7 @@
     <nav>
         <h1>Настройки вашего проекта:</h1>
         <form method="POST" action="/api/updateProject" th:object="${project}">
-            <table>
+            <table class="settings">
                 <tr>
                     <td><label for="status">Статус проекта:</label></td>
                     <td><h1 th:text="*{status}" id="status"></h1></td>
@@ -53,11 +53,12 @@
                 </tr>
                 <tr>
                     <td></td>
-                    <td><input type="submit" value="Сохранить изменения"></td>
+                    <td><input class="button" type="submit" value="Сохранить изменения"></td>
                 </tr>
             </table>
             <input type="hidden" th:field="*{currentLaunch}" id="currentLaunch">
             <input type="hidden" th:field="*{lastLaunch}" id="lastLaunch">
+            <input type="hidden" th:field="*{status}" id="status1">
             <input type="hidden" th:field="*{id}" id="id">
 
         </form>

@@ -67,8 +67,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<Project> getAllProjects(Long projectId) {
-        return null;
+    public List<Project> getAllProjects() {
+        return projectRep.findAll();
     }
 
     @Override

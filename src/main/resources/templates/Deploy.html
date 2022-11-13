@@ -15,7 +15,7 @@
     <nav>
       <h1>Введите данные вашего проекта:</h1>
       <form method="POST" action="/api/createProject" th:object="${project}">
-        <table >
+        <table class="settings">
           <tr>
             <td ><label for="name">Название проекта:</label></td>
             <td><input type="text" th:field="*{name}" id="name"></td>
@@ -39,7 +39,7 @@
           </tr>
           <tr>
             <td></td>
-            <td><input type="submit" value="Задеплоить проект"></td>
+            <td><input class = "button" type="submit" value="Задеплоить проект"></td>
           </tr>
         </table>
       </form>

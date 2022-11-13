@@ -1,21 +1,48 @@
 <!DOCTYPE html>
-<!--<html lang="en" xmlns:th="http://thymeleaf.org">-->
+<html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
-  <meta charset="utf-8">
-  <title>Freemium Hosting</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title>Freemium Hosting</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/projects.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 </head>
 <body>
-<div th:insert ="header.html :: head"></div>
+<div th:insert="header.html :: head"></div>
 
-  <section class="container" type="main" id="Проекты">
+<section class="container" type="main" id="Проекты">
     <nav>
-      <h1>Это страница с проектами</h1>
+        <h1>Ваши проекты</h1>
+        <h1 th:if="${projects.empty}"> Проекты еще не созданы</h1>
+        <table th:if="${!projects.empty}">
+            <thead>
+            <tr>
+                <th> Имя проекта</th>
+                <th> Ссылка на git</th>
+                <th> Статус проекта</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="project : ${projects}">
+                <td><span th:text="${project.name}"> Title </span></td>
+                <td><a th:href="${project.link}" th:text="${project.link}" target="_blank"> Link </a></td>
+                <td><span th:text="${project.status}"> Status </span></td>
+                <td>
+                    <form th:action="@{'/projects/'+${project.id}}">
+                        <button>Настройки проекта</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <form th:action="@{'/deploy'}">
+            <button class="button">Новый проект</button>
+        </form>
     </nav>
-  </section>
-<div th:insert ="footer.html :: foot"></div>
+</section>
+<div th:insert="footer.html :: foot"></div>
 <script src="/js/dynamicHeader.js">
 
 </script>
