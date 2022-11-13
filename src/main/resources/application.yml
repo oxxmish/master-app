@@ -34,7 +34,7 @@ management:
 spring:
   h2:
     console:
-      enabled: true
+      enabled: false #true
   mvc:
     static-path-pattern: /**
   datasource:
@@ -44,7 +44,7 @@ spring:
     driver-class-name: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
-    show-sql: true
+    show-sql: false #true
     hibernate:
       ddl-auto: update
 
