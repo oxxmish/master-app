@@ -18,7 +18,7 @@ public class MavenInfoService implements BuilderInfoService {
     @SneakyThrows
     public String getExecutableFileName(String pathToProject) {
         PomXmlStructure pomXmlStructure = xmlMapper.readValue(new File(pathToProject + "\\pom.xml"), PomXmlStructure.class);
-        return pomXmlStructure.groupId + pomXmlStructure.artifactId + pomXmlStructure.version + ".jar"; //TODO: имя выходного файла может быть переопределено средствами плагина, лучше просто искать jarник в target
+        return pomXmlStructure.artifactId + "-" + pomXmlStructure.version + ".jar"; //TODO: имя выходного файла может быть переопределено средствами плагина, лучше просто искать jarник в target
     }
 
     @Override

@@ -51,14 +51,15 @@ spring:
 freemium:
   hosting:
     git-clone-path: ${GIT_CLONE_TEMP_PATH:./tmp/git-clone}
-    default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/builder}
+    default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/git-clone/Dockerfile}
     dockerfile:
       workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}
       imageParams:
-        java:
+        Java:
           builderImage: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-11} #TODO: change version
           buildCommand: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
           runnerImage: ${JAVA_RUN_IMAGE:openjdk:11.0.16-jre} #TODO: change to jre
-        python:
+        Python:
           runnerImage: ${PY_RUN_IMAGE:python:3.9}
           appName: ${PY_APP_NAME:app.py}
+        Docker: {}

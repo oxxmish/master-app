@@ -18,6 +18,6 @@ public class GitServiceTest {
 
     @Test
     public void gitCloneTest() {
-        gitService.cloneGitRepo("https://github.com/freemium-hosting/master-app.git");
+        gitService.cloneGitRepo("https://github.com/freemium-hosting/master-app.git", "master");
     }
 }

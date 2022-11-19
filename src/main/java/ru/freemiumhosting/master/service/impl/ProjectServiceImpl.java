@@ -1,5 +1,8 @@
 package ru.freemiumhosting.master.service.impl;
 
+import static ru.freemiumhosting.master.service.builderinfo.DockerInfoService.DOCKER_LANG;
+
+
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -15,6 +18,7 @@ import java.util.List;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
+
     private final String clonePath;
     private final GitService gitService;
     private final DockerfileBuilderService dockerfileBuilderService;
@@ -36,9 +40,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void createProject(Project project) {
-        gitService.cloneGitRepo(project.getLink());
-        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT)).getExecutableFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
-        dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "");
+        gitService.cloneGitRepo(project.getLink(), project.getBranch());
+        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
+            .getExecutableFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
+        if (!DOCKER_LANG.equals(project.getLanguage())) {
+            dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "");
+        }
         projectRep.save(project);
     }
 
