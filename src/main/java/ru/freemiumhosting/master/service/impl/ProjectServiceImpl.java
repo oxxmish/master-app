@@ -1,9 +1,14 @@
 package ru.freemiumhosting.master.service.impl;
 
+import static ru.freemiumhosting.master.service.builderinfo.DockerInfoService.DOCKER_LANG;
+
+
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
@@ -15,6 +20,7 @@ import java.util.List;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
+
     private final String clonePath;
     private final GitService gitService;
     private final DockerfileBuilderService dockerfileBuilderService;
@@ -35,10 +41,16 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @SneakyThrows //TODO: handle InvalidProjectException
     public void createProject(Project project) {
-        gitService.cloneGitRepo(project.getLink());
-        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT)).getExecutableFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
-        dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "");
+        var projectPath = Path.of(clonePath, project.getName());
+        gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
+        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
+            .validateProjectAndGetExecutableFileName(projectPath.toString());
+        if (!DOCKER_LANG.equals(project.getLanguage())) {
+            dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
+                project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
+        }
         projectRep.save(project);
     }
 

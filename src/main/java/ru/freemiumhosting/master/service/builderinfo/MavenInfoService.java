@@ -1,6 +1,7 @@
 package ru.freemiumhosting.master.service.builderinfo;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import java.nio.file.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,13 @@ public class MavenInfoService implements BuilderInfoService {
 
     @Override
     @SneakyThrows
-    public String getExecutableFileName(String pathToProject) {
-        PomXmlStructure pomXmlStructure = xmlMapper.readValue(new File(pathToProject + "\\pom.xml"), PomXmlStructure.class);
-        return pomXmlStructure.groupId + pomXmlStructure.artifactId + pomXmlStructure.version + ".jar"; //TODO: имя выходного файла может быть переопределено средствами плагина, лучше просто искать jarник в target
+    public String validateProjectAndGetExecutableFileName(String pathToProject) {
+        var pomFile = new File(pathToProject + "\\pom.xml");
+        if (!pomFile.exists()) {
+            throw new InvalidProjectException("Проект не содержит исполняемый файл pom.xml");
+        }
+        PomXmlStructure pomXmlStructure = xmlMapper.readValue(pomFile, PomXmlStructure.class);
+        return pomXmlStructure.artifactId + "-" + pomXmlStructure.version + ".jar"; //TODO: имя выходного файла может быть переопределено средствами плагина, лучше просто искать jarник в target
     }
 
     @Override

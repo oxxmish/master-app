@@ -22,15 +22,12 @@ public class DockerfileBuilderService {
     private final String EXECUTABLE_PARAM = "executableName";
 
 
-    @Value("${freemium.hosting.default-builder-path}")
-    private String DOCKERFILE_PATH;
 
     @SneakyThrows
-    public void createDockerFile(String language, String jarName, String runArgs) {
+    public void createDockerFile(Path dockerfilePath, String language, String executableName, String runArgs) {
         var dockerBuildParams = dockerfilesProperties.getImageParams().get(language);
-        String dockerfileString = generateDockerFileString(language, dockerBuildParams, jarName);
-        Path path = Paths.get(DOCKERFILE_PATH);
-        Files.write(path, dockerfileString.getBytes(StandardCharsets.UTF_8));
+        String dockerfileString = generateDockerFileString(language, dockerBuildParams, executableName);
+        Files.write(dockerfilePath, dockerfileString.getBytes(StandardCharsets.UTF_8));
     }
 
     String generateDockerFileString(String language, Map<String, String> dockerBuildParams,
