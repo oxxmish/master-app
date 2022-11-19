@@ -54,12 +54,12 @@ freemium:
     default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/git-clone/Dockerfile}
     dockerfile:
       workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}
-      imageParams:
-        Java:
+      imageParams: #lowercase
+        java:
           builderImage: ${JAVA_BUILDER_IMAGE:maven:3.6.3-jdk-11} #TODO: change version
           buildCommand: ${JAVA_BUILD_COMMAND:mvn install -DskipTests=true}
           runnerImage: ${JAVA_RUN_IMAGE:openjdk:11.0.16-jre} #TODO: change to jre
-        Python:
+        python:
           runnerImage: ${PY_RUN_IMAGE:python:3.9}
-          appName: ${PY_APP_NAME:app.py}
-        Docker: {}
+          appName: ${PY_APP_NAME:./app.py}
+        docker: {}

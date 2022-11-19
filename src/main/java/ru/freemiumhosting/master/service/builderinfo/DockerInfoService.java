@@ -8,7 +8,7 @@ public class DockerInfoService implements BuilderInfoService {
     public static final String DOCKER_LANG = "Docker";
 
     @Override
-    public String getExecutableFileName(String pathToProject) {
+    public String validateProjectAndGetExecutableFileName(String pathToProject) {
         if (!Path.of(pathToProject, "Dockerfile").toFile().exists()) {
             throw new IllegalArgumentException(
                 "Docker was specified as target platform, but no Dockerfile in project root was found");

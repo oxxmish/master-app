@@ -12,4 +12,4 @@ freemium:
           runnerImage: ${JAVA_RUN_IMAGE:openjdk:11.0.16-jre} #TODO: change to jre
         python:
           runnerImage: ${PY_RUN_IMAGE:python:3.9}
-          appName: ${PY_APP_NAME:app.py}
+          appName: ${PY_APP_NAME:./app.py}

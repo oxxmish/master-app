@@ -9,10 +9,7 @@ import java.io.File;
 
 @Service
 public class GitService {
-    @Value("${freemium.hosting.git-clone-path}")
-    private String gitClonePath;
-
-    public void cloneGitRepo(String uri, String branch) {
+    public void cloneGitRepo(String gitClonePath, String uri, String branch) {
         try (Git git = Git.cloneRepository()
             .setURI(uri)
             .setDirectory(new File(gitClonePath)) //TODO: clean folder
