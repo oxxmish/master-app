@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.ProjectRep;
-import ru.freemiumhosting.master.service.ProjectService;
 
 import java.io.*;
 import java.util.*;
@@ -34,25 +33,8 @@ public class KubernetesService {
         return client;
     }
 
-    public void createKubernetesObject(Project project) {
+    public void createNamespaceIfDontExist(CoreV1Api api, Project project) {
         try {
-            ApiClient client = createKubernetesApiClient();
-
-            Configuration.setDefaultApiClient(client);
-
-            CoreV1Api api = new CoreV1Api();
-
-            V1Pod pod =
-                    new V1Pod()
-                            .metadata(new V1ObjectMeta().name("test-pod"))
-                            .spec(new V1PodSpec().containers(Arrays.asList(new V1Container().name("www").image("nginx:1.23.2-alpine"))))
-                            .spec(new V1PodSpec().containers(Arrays.asList(new V1Container().name("w").addEnvItem(new V1EnvVar().name("number").value("77")))));
-            V1Pod pod1 =
-                    new V1Pod()
-                            .metadata(new V1ObjectMeta().name("anotherpod"))
-                            .spec(new V1PodSpec().containers(Arrays.asList(new V1Container().name("www").image("nginx:1.23.2-alpine"))));
-
-            //api.createNamespacedPod("default", pod, null, null, null, null);
             V1NamespaceList namespaceList = api.listNamespace(null, null, null, null, null, null, null, null, null, null);
             List<String> list =
                     namespaceList
@@ -62,21 +44,55 @@ public class KubernetesService {
                             .collect(Collectors.toList());
             if (!list.contains("user1"))//TODO: CHANGE
                 api.createNamespace(new V1Namespace().metadata(new V1ObjectMeta().name("user1")), null, null, null, null);
-
-            HashMap<String, String> ii = new HashMap<>();
-            ii.put("app", "deployment");
-            ArrayList<V1ServicePort> ports = new ArrayList<>();
-            ports.add(new V1ServicePort().port(8080).nodePort(project.getNodePort()));//TODO:CHANGE 8080
-            api.createNamespacedService("user1", new V1Service()
-                    .apiVersion("v1")
-                    //.kind("Deployment")
-                    .metadata(new V1ObjectMeta().name(project.getKubernetesName())).spec(new V1ServiceSpec().ports(ports).type("NodePort")), null, null, null, null);
         } catch (ApiException e) {
             project.setStatus("При деплое проекта произошла ошибка");
             projectRep.save(project);
             System.out.println(e.getResponseBody());
+        }
+    }
+
+    public void createService(CoreV1Api api, Project project) {
+        try {
+            HashMap<String, String> annotations = new HashMap<>();
+            annotations.put("name", project.getKubernetesName());
+
+            HashMap<String, String> labels = new HashMap<>();
+            labels.put("app.kubernetes.io/name", project.getKubernetesName());
+
+            ArrayList<V1ServicePort> ports = new ArrayList<>();
+            ports.add(new V1ServicePort().port(8080).nodePort(project.getNodePort()));//TODO:CHANGE 8080
+
+            api.createNamespacedService("user1", new V1Service()
+                    .apiVersion("v1")
+                    .metadata(new V1ObjectMeta().name(project.getKubernetesName())
+                            .annotations(annotations).labels(labels))
+                    .spec(new V1ServiceSpec().ports(ports).type("NodePort").selector(labels)), null, null, null, null);
+        } catch (ApiException e) {
+            project.setStatus("При деплое проекта произошла ошибка");
+            projectRep.save(project);
+            System.out.println(e.getResponseBody());
+        }
+    }
+
+    public void createKubernetesObjects(Project project) {
+        try {
+            ApiClient client = createKubernetesApiClient();
+
+            Configuration.setDefaultApiClient(client);
+
+            CoreV1Api api = new CoreV1Api();
+
+            createNamespaceIfDontExist(api,project);
+            createService(api,project);
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            project.setStatus("При деплое проекта произошла ошибка");
+            projectRep.save(project);
+            System.out.println(e.getMessage());
+        } catch (ApiException e) {
+            project.setStatus("При деплое проекта произошла ошибка");
+            projectRep.save(project);
+            System.out.println(e.getResponseBody());
         }
 
     }

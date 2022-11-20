@@ -9,11 +9,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import io.kubernetes.client.openapi.ApiException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -50,19 +47,19 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @SneakyThrows //TODO: handle InvalidProjectException
     public void createProject(Project project) {
-        var projectPath = Path.of(clonePath, project.getName());
-        gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
-        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
-                .validateProjectAndGetExecutableFileName(projectPath.toString());
-        if (!DOCKER_LANG.equals(project.getLanguage())) {
-            dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
-                    project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
-        }
+        //var projectPath = Path.of(clonePath, project.getName());
+        //gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
+        //var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
+        //        .validateProjectAndGetExecutableFileName(projectPath.toString());
+        //if (!DOCKER_LANG.equals(project.getLanguage())) {
+        //    dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
+        //            project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
+        //}
         projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
         project.setKubernetesName("project" + project.getId());
         generateProjectNodePort(project);
         projectRep.save(project);
-        kubernetesService.createKubernetesObject(project);
+        kubernetesService.createKubernetesObjects(project);
     }
 
     @Override

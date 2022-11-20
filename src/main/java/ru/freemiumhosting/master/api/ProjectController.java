@@ -16,7 +16,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
-    @SneakyThrows
+
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute Project project) {
         projectService.createProject(project);
