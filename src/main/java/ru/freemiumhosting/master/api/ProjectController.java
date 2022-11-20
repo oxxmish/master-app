@@ -1,6 +1,7 @@
 package ru.freemiumhosting.master.api;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @SneakyThrows
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute Project project) {
         projectService.createProject(project);
