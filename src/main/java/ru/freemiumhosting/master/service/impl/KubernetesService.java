@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.ProjectRep;
@@ -21,11 +22,12 @@ import java.util.stream.Collectors;
 public class KubernetesService {
     private final ProjectRep projectRep;
 
+    @Value("${freemium.hosting.kubeconfig")
+    private String kubeConfigPath;
+
     public KubernetesClient createKubernetesApiClient() {
-        String kubeConfigPath = "src/main/resources/configs/config.yml";
         System.setProperty("kubeconfig", kubeConfigPath);
-        KubernetesClient client = new KubernetesClientBuilder().build();
-        return client;
+        return new KubernetesClientBuilder().build();
     }
 
     public void createDeployment(KubernetesClient client, Project project) {

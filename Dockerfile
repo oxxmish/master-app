@@ -1,4 +1,5 @@
 ARG BASE_IMAGE=openjdk:11.0.16-jre
+ARG KUBECONFIG_PATH=./config.yaml
 
 FROM ${BASE_IMAGE}
 
@@ -32,6 +33,9 @@ ENV SPRING_PROFILES_ACTIVE "prod"
 
 WORKDIR /opt/app/
 COPY ${JAR_FILE} /opt/app/${APP_NAME}.jar
+COPY ${KUBECONFIG_PATH} /opt/app/config.yaml
+
+ENV KUBECONFIG_PATH /opt/app/config.yaml
 
 CMD exec java \
     ${JAVA_DEFAULT_OPTS} \
