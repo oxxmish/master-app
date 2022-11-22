@@ -1,12 +1,11 @@
 package ru.freemiumhosting.master.service.builderinfo;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import java.nio.file.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.exception.InvalidProjectException;
 import ru.freemiumhosting.master.model.maven.PomXmlStructure;
-import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
 
 import java.io.File;
 

@@ -317,3 +317,7 @@ input:checked + .slider:before {
 .button{
     font-size: 18px;
 }
+
+.error-message {
+    color: red;
+}

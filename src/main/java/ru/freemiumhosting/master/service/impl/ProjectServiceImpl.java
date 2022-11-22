@@ -14,6 +14,7 @@ import java.util.*;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.exception.DeployException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.ProjectRep;
 import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
@@ -45,8 +46,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    @SneakyThrows //TODO: handle InvalidProjectException
-    public void createProject(Project project) {
+    public void createProject(Project project) throws DeployException {
         var projectPath = Path.of(clonePath, project.getName());
         gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
         var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
@@ -68,7 +68,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void updateProject(Project project) {
+    public void updateProject(Project project) throws DeployException {
         if (project.userFinishesDeploy()) {
             //TODO: вызываем сервис по сворачиванию проекта
             project.setStatus("Деплой приостановлен пользователем");

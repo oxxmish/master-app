@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import ru.freemiumhosting.master.exception.GitCloneException;
 import ru.freemiumhosting.master.service.impl.GitService;
 
 @ExtendWith(SpringExtension.class)
@@ -20,7 +21,7 @@ public class GitServiceTest {
     private String gitClonePath;
 
     @Test
-    public void gitCloneTest() {
+    public void gitCloneTest() throws GitCloneException {
         gitService.cloneGitRepo(gitClonePath, "https://github.com/freemium-hosting/master-app.git", "master");
     }
 }

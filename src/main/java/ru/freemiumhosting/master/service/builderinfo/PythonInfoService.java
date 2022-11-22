@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.exception.InvalidProjectException;
 
 @Service
 public class PythonInfoService implements BuilderInfoService {
@@ -13,7 +14,8 @@ public class PythonInfoService implements BuilderInfoService {
     private String appName;
 
     @Override
-    public String validateProjectAndGetExecutableFileName(String pathToProject) throws InvalidProjectException {
+    public String validateProjectAndGetExecutableFileName(String pathToProject) throws
+        InvalidProjectException {
         var appPyPath = Path.of(pathToProject, appName);
         if (!Files.exists(appPyPath)) {
             throw new InvalidProjectException("Проект не содержит исполняемый файл app.py");

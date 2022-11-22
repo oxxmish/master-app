@@ -18,24 +18,28 @@
             <table class="settings">
                 <tr>
                     <td><label for="name">Название проекта:</label></td>
-                    <td><input type="text" th:field="*{name}" id="name"></td>
+                    <td><input required type="text" th:field="*{name}" id="name"></td>
                 </tr>
                 <tr>
                     <td><label for="link">Ссылка на git-репозиторий:</label></td>
-                    <td><input type="text" th:field="*{link}" id="link"></td>
+                    <td><input required type="text" th:field="*{link}" id="link"></td>
                 </tr>
                 <tr>
                     <td><label for="branch">Имя ветки</label></td>
-                    <td><input type="text" th:field="*{branch}" id="branch"></td>
+                    <td><input required type="text" th:field="*{branch}" id="branch"></td>
                 </tr>
                 <tr>
                     <td><label for="language">Язык программирования:</label></td>
-                    <td><select th:field="*{language}" id="language">
+                    <td><select required th:field="*{language}" id="language">
                         <option selected="selected" value="">Выберите язык программирования</option>
                         <option value="Java">Java</option>
                         <option value="Python">Python</option>
                         <option value="Docker">Docker</option>
                     </select></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><i class="error-message" th:text="${errorMessage}"></i></td>
                 </tr>
                 <tr>
                     <td></td>
