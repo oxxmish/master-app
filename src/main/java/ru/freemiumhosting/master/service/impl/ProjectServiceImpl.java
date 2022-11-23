@@ -47,24 +47,24 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void createProject(Project project) throws DeployException {
+        deployProject(project);
+        projectRep.save(project);
+    }
+
+    @Override
+    public void deployProject(Project project) throws DeployException {
         var projectPath = Path.of(clonePath, project.getName());
         gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
         var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
-                .validateProjectAndGetExecutableFileName(projectPath.toString());
+            .validateProjectAndGetExecutableFileName(projectPath.toString());
         if (!DOCKER_LANG.equals(project.getLanguage())) {
             dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
-                    project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
+                project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
         }
         projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
         project.setKubernetesName("project" + project.getId());
         generateProjectNodePort(project);
-        projectRep.save(project);
         kubernetesService.createKubernetesObjects(project);
-    }
-
-    @Override
-    public void deployProject(Project project) {
-
     }
 
     @Override

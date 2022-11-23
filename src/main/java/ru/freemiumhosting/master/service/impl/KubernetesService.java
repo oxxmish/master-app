@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class KubernetesService {
     private final ProjectRep projectRep;
 
-    @Value("${freemium.hosting.kubeconfig")
+    @Value("${freemium.hosting.kubeconfig}")
     private String kubeConfigPath;
 
     public KubernetesClient createKubernetesApiClient() {
@@ -49,8 +49,8 @@ public class KubernetesService {
                     .endMetadata()
                     .withNewSpec()
                     .addNewContainer()
-                    .withName("nginx")
-                    .withImage("nginx")
+                    .withName("app")
+                    .withImage("freemiumhosting/testbot1")
                     .addNewPort()
                     .withContainerPort(8080)
                     .endPort()
