@@ -89,3 +89,16 @@ db:
     size: 15M
     hostPath: "/mnt/data"
     mountPath: "/opt/data/"
+
+project_build:
+  git_clone_path: ./tmp/git-clone
+  docker_workdir: /usr/src/app/backend
+
+images:
+  java:
+    builder_image: "maven:3.6.3-jdk-11"
+    build_command: "mvn install -DskipTests=true"
+    runner_image: "openjdk:11.0.16-jre"
+  python:
+    runner_image: python:3.9
+    appname: ./app.py

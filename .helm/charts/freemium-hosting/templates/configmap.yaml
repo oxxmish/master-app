@@ -8,4 +8,11 @@ metadata:
 data:
   SERVER_PORT: {{ .Values.application.port | quote }}
   DB_URL: {{ printf "jdbc:h2:file://%s/%s" .Values.db.persistence.mountPath .Values.db.name | quote }}
-
+  #KUBECONFIG_PATH - from Deployment
+  GIT_CLONE_TEMP_PATH: {{ .Values.project_build.git_clone_path | quote }}
+  DOCKER_BUILD_WORKDIR: {{ .Values.project_build.docker_workdir | quote }}
+  JAVA_BUILDER_IMAGE: {{ .Values.images.java.builder_image | quote }}
+  JAVA_BUILD_COMMAND: {{ .Values.images.java.build_command | quote }}
+  JAVA_RUN_IMAGE: {{ .Values.images.java.runner_image | quote }}
+  PY_RUN_IMAGE: {{ .Values.images.python.runner_image | quote }}
+  PY_APP_NAME: {{ .Values.images.python.appname | quote }}

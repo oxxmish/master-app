@@ -51,7 +51,6 @@ spring:
 freemium:
   hosting:
     git-clone-path: ${GIT_CLONE_TEMP_PATH:./tmp/git-clone}
-    default-builder-path:  ${GIT_CLONE_TEMP_PATH:./tmp/git-clone/Dockerfile}
     kubeconfig: ${KUBECONFIG_PATH:./src/main/resources/configs/config.yml}
     dockerfile:
       workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}

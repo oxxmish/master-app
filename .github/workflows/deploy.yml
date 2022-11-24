@@ -11,6 +11,7 @@ env:
   APP: freemium-hosting
   IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  REGISTRY_URL: "registry.hub.docker.com"
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
@@ -58,8 +59,9 @@ jobs:
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
         run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" \
-            --build-arg REGISTRY_LOGIN="$REGISTRY_LOGIN" \
             --build-arg KUBECONFIG_PATH=${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} \
+            --build-arg REGISTRY_URL="$REGISTRY_URL" \
+            --build-arg REGISTRY_LOGIN="$REGISTRY_LOGIN" \
             --build-arg REGISTRY_PASSWORD="$REGISTRY_PASSWORD" .
       # Push the image to Registry
       - name: Push the image to Registry
