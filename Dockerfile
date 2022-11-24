@@ -50,6 +50,11 @@ ENV REGISTRY_URL REGISTRY_URL
 ENV REGISTRY_USER REGISTRY_USER
 ENV REGISTRY_PASSWORD REGISTRY_PASSWORD
 
+#write auths for kaniko
+RUN mkdir -p /kaniko/.docker && \
+    echo "{\"auths\":{\"$REGISTRY_URL\":{\"username\":\"$REGISTRY_USER\",\"password\":\"$REGISTRY_PASSWORD\"}}}" \
+    > /kaniko/.docker/config.json
+
 #TODO: remove this, this is to test that kaniko works
 #ENTRYPOINT echo "FROM nginx" > /opt/Dockerfile && mkdir -p /kaniko/.docker && \
 #           echo "{\"auths\":{\"$REGISTRY_URL\":{\"username\":\"$REGISTRY_USER\",\"password\":\"$REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json && \
