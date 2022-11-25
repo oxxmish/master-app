@@ -26,10 +26,10 @@ public class DockerfileBuilderService {
     private String DOCKERFILE_PATH;
 
     @SneakyThrows
-    public void createDockerFile(String language, String jarName, String runArgs) {
+    public void createDockerFile(String language, String executableFileName, String runArgs, Long projectId) {
         var dockerBuildParams = dockerfilesProperties.getImageParams().get(language);
-        String dockerfileString = generateDockerFileString(language, dockerBuildParams, jarName);
-        Path path = Paths.get(DOCKERFILE_PATH);
+        String dockerfileString = generateDockerFileString(language, dockerBuildParams, executableFileName);
+        Path path = Paths.get(DOCKERFILE_PATH, String.valueOf(projectId), "Dockerfile");
         Files.write(path, dockerfileString.getBytes(StandardCharsets.UTF_8));
     }
 

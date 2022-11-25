@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
+import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
 import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
 import ru.freemiumhosting.master.service.ProjectService;
@@ -36,9 +37,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void createProject(Project project) {
-        gitService.cloneGitRepo(project.getLink());
-        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT)).getExecutableFileName(clonePath); //TODO: если POM отсутствует в корне проекта, кидать человекочитаемую ошибку
-        dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "");
+        gitService.cloneGitRepo(project.getLink(), project.getBranch(), project.getId());
+        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT)).getExecutableFileName(clonePath);
+        project.setExecutableFileName(executableFileName);
+        project.setStatus(ProjectStatus.CREATED);
+        dockerfileBuilderService.createDockerFile(project.getLanguage(), executableFileName, "", project.getId());//TODO добавить поддержку runArgs
         projectRep.save(project);
     }
 

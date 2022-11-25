@@ -18,19 +18,29 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projects_generator")
     @SequenceGenerator(name = "projects_generator", sequenceName = "projects_seq", allocationSize = 500)
     private Long id;
+    @Column(name = "name")
     private String name;
+    @Column(name = "link")
     private String link;
+    @Column(name = "branch")
     private String branch;
-    private String status = "Деплой проекта запущен успешно";//TODO change
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status = ProjectStatus.UNDEFINED;
+    @Column(name = "language")
     private String language;
+    @Column(name = "executableFileName")
+    private String executableFileName;
+    @Column(name = "lastLaunch")
     private String lastLaunch = "true";
+    @Column(name = "currentLaunch")
     private String currentLaunch = "true";
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Project(String name, String link, String status, String language) {
+    public Project(String name, String link, ProjectStatus status, String language) {
         this.name = name;
         this.link = link;
         this.status = status;
@@ -42,16 +52,10 @@ public class Project {
     }
 
     public Boolean userStartsDeploy() {
-        if (lastLaunch.equals("false") && currentLaunch.equals("true"))
-            return true;
-        else
-            return false;
+        return this.status == ProjectStatus.CREATED;
     }
 
     public Boolean userFinishesDeploy() {
-        if (lastLaunch.equals("true") && currentLaunch.equals("false"))
-            return true;
-        else
-            return false;
+        return this.status == ProjectStatus.RUNNING;
     }
 }
