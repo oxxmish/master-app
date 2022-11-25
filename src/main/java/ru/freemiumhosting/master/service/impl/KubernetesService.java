@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KubernetesService {
@@ -65,7 +67,7 @@ public class KubernetesService {
         } catch (KubernetesClientException e) {
             project.setStatus("При деплое проекта произошла ошибка");
             projectRep.save(project);
-            System.out.println(e.getMessage());
+            log.error("При деплое проекта произошла ошибка", e);
         }
     }
 
@@ -99,7 +101,7 @@ public class KubernetesService {
         } catch (KubernetesClientException e) {
             project.setStatus("При деплое проекта произошла ошибка");
             projectRep.save(project);
-            System.out.println(e.getMessage());
+            log.error("При деплое проекта произошла ошибка", e);
         }
     }
 
@@ -124,7 +126,7 @@ public class KubernetesService {
         } catch (KubernetesClientException e) {
             project.setStatus("При деплое проекта произошла ошибка");
             projectRep.save(project);
-            System.out.println(e.getMessage());
+            log.error("При деплое проекта произошла ошибка", e);
         }
     }
         public void createKubernetesObjects(Project project){
@@ -136,7 +138,7 @@ public class KubernetesService {
             } catch (KubernetesClientException e) {
                 project.setStatus("При деплое проекта произошла ошибка");
                 projectRep.save(project);
-                System.out.println(e.getMessage());
+                log.error("При деплое проекта произошла ошибка", e);
             }
         }
 

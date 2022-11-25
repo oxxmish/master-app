@@ -21,7 +21,7 @@ public class Project {
     private String name;
     private String link;
     private String branch;
-    private String status = "Деплой проекта запущен успешно";//TODO change
+    private String status = "Деплой проекта запущен успешно";//TODO change to enum
     private String language;
     private String lastLaunch = "true";
     private String currentLaunch = "true";
@@ -34,17 +34,11 @@ public class Project {
     private User user;
 
     public Boolean userStartsDeploy() {
-        if (lastLaunch.equals("false") && currentLaunch.equals("true"))
-            return true;
-        else
-            return false;
+        return lastLaunch.equals("false") && currentLaunch.equals("true");
     }
 
     public Boolean userFinishesDeploy() {
-        if (lastLaunch.equals("true") && currentLaunch.equals("false"))
-            return true;
-        else
-            return false;
+        return lastLaunch.equals("true") && currentLaunch.equals("false");
     }
 
 }

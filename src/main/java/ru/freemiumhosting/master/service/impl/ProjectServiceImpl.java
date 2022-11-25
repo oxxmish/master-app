@@ -70,7 +70,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void updateProject(Project project) throws DeployException {
         if (project.userFinishesDeploy()) {
-            //TODO: вызываем сервис по сворачиванию проекта
+            //TODO: вызываем сервис по сворачиванию проекта - удаляем все объекты из кубера по label name == project.getKubernetesName()
             project.setStatus("Деплой приостановлен пользователем");
         }
         if (project.userStartsDeploy()) {
