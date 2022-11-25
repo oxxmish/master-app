@@ -1,17 +1,28 @@
 package ru.freemiumhosting.master.service.builderinfo;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.exception.InvalidProjectException;
 
 @Service
 public class PythonInfoService implements BuilderInfoService {
-    @Value("freemium.hosting.dockerfile.imageParams.python.appName")
+    private static final String REQUIREMENTS_FILE = "requirements.txt";
+
+    @Value("${freemium.hosting.dockerfile.imageParams.python.appName}")
     private String appName;
 
     @Override
-    public String getExecutableFileName(String pathToProject) {
-        return Path.of(pathToProject, appName).toString();
+    public String validateProjectAndGetExecutableFileName(String pathToProject) throws
+        InvalidProjectException {
+        var appPyPath = Path.of(pathToProject, appName);
+        if (!Files.exists(appPyPath)) {
+            throw new InvalidProjectException("Проект не содержит исполняемый файл app.py");
+        } else if (!Files.exists(Path.of(pathToProject, REQUIREMENTS_FILE))) {
+            throw new InvalidProjectException("Проект не содержит файл requirements.txt");
+        }
+        return appName;
     }
 
     @Override

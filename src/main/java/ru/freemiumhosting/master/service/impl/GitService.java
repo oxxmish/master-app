@@ -7,24 +7,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.nio.file.Paths;
+import ru.freemiumhosting.master.exception.GitCloneException;
 
-@Service
 @Slf4j
+@Service
 public class GitService {
-    @Value("${freemium.hosting.git-clone-path}")
-    private String gitClonePath;
-
-    public void cloneGitRepo(String uri, String branch, Long projectId) {
-        try {
-            log.info("Старт клонирования репозитория " + uri);
-            Git.cloneRepository()
-                    .setURI(uri)
-                    .setDirectory(new File(gitClonePath))
-                    .call();
-            log.info("Клонирование репозитория " + uri + " закончено");
+    public void cloneGitRepo(String gitClonePath, String uri, String branch)
+        throws GitCloneException {
+        try (Git git = Git.cloneRepository()
+            .setURI(uri)
+            .setDirectory(new File(gitClonePath)) //TODO: clean folder
+            .setBranch(branch)
+            .call()) {
         } catch (GitAPIException ex) {
-            System.err.println("Возникла проблема при клонировании git репозитория");
+            log.error("Возникла проблема при клонировании git репозитория", ex);
+            throw new GitCloneException("Возникла проблема при клонировании git репозитория: " + ex.getMessage());
         }
     }
 }

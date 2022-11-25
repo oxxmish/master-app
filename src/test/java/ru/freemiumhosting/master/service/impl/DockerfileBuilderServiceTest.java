@@ -39,7 +39,7 @@ class DockerfileBuilderServiceTest {
             "RUN mvn install -DskipTests=true\n" +
             "FROM openjdk:11.0.16-jre\n" +
             "WORKDIR /usr/src/app/backend\n" +
-            "COPY --from=builder /usr/src/app/backend/target/app.jar\n" +
+            "COPY --from=builder /usr/src/app/backend/target/app.jar app.jar\n" +
             "ENTRYPOINT java -jar app.jar\n";
 
     public static Stream<Arguments> getCases() {
