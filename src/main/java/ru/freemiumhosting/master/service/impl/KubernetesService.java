@@ -52,7 +52,7 @@ public class KubernetesService {
                     .withNewSpec()
                     .addNewContainer()
                     .withName("app")
-                    .withImage("freemiumhosting/testbot1")
+                    .withImage("freemiumhosting/test-app-java:latest")
                     .addNewPort()
                     .withContainerPort(8080)
                     .endPort()
