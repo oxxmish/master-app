@@ -1,6 +1,7 @@
 package ru.freemiumhosting.master.service.builderinfo;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class MavenInfoService implements BuilderInfoService {
     @Override
     @SneakyThrows
     public String validateProjectAndGetExecutableFileName(String pathToProject) {
-        var pomFile = new File(pathToProject + "\\pom.xml");
+        var pomFile = Path.of(pathToProject, "pom.xml").toFile();
         if (!pomFile.exists()) {
             throw new InvalidProjectException("Проект не содержит исполняемый файл pom.xml");
         }
