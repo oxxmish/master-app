@@ -59,8 +59,10 @@ jobs:
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
         run: |
+          export KUBECONFIG_PATH="${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
+          echo "$KUBECONFIG_PATH"
           docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" \
-            --build-arg KUBECONFIG_PATH=${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} \
+            --build-arg KUBECONFIG_PATH="$KUBECONFIG_PATH" \
             --build-arg REGISTRY_URL="$REGISTRY_URL" \
             --build-arg REGISTRY_LOGIN="$REGISTRY_LOGIN" \
             --build-arg REGISTRY_PASSWORD="$REGISTRY_PASSWORD" .
