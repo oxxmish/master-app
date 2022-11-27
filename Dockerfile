@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=openjdk:11.0.16-jre
-ARG KUBECONFIG_PATH=./config.yaml
 
 FROM ${BASE_IMAGE}
 
+ARG KUBECONFIG_PATH=./config.yaml
 ARG JAR_FILE=app.jar
 ARG JAR_OPTS=""
 ARG JAVA_OPTS=""
