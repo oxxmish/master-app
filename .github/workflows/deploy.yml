@@ -6,7 +6,7 @@ on:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  KUBE_CONFIG_PATH: /opt/app/
+  KUBE_CONFIG_PATH: /opt/app
   KUBE_CONF_FILE: kubeconfig.yml
   APP: freemium-hosting
   IMAGE_TAG: ${{ github.sha }}
