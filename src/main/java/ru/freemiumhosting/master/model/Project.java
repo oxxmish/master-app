@@ -21,8 +21,10 @@ public class Project {
     private String name;
     private String link;
     private String branch;
-    private String status = "Деплой проекта запущен успешно";//TODO change to enum
+    private ProjectStatus status = ProjectStatus.UNDEFINED;//TODO change to enum
     private String language;
+    private String executableName;
+    private String registryDestination;
     private String lastLaunch = "true";
     private String currentLaunch = "true";
     private String kubernetesName;

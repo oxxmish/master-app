@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Project;
+import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
 
 import java.util.HashMap;
@@ -51,8 +52,8 @@ public class KubernetesService {
                     .endMetadata()
                     .withNewSpec()
                     .addNewContainer()
-                    .withName("app")
-                    .withImage("freemiumhosting/testbot1")
+                    .withName(project.getExecutableName())
+                    .withImage(project.getRegistryDestination())
                     .addNewPort()
                     .withContainerPort(8080)
                     .endPort()
@@ -65,7 +66,7 @@ public class KubernetesService {
             client.apps().deployments().inNamespace("user1").create(deployment);
 
         } catch (KubernetesClientException e) {
-            project.setStatus("При деплое проекта произошла ошибка");
+            project.setStatus(ProjectStatus.ERROR);
             projectRep.save(project);
             log.error("При деплое проекта произошла ошибка", e);
         }
@@ -99,7 +100,7 @@ public class KubernetesService {
             client.services().inNamespace("user1").create(service);
 
         } catch (KubernetesClientException e) {
-            project.setStatus("При деплое проекта произошла ошибка");
+            project.setStatus(ProjectStatus.ERROR);
             projectRep.save(project);
             log.error("При деплое проекта произошла ошибка", e);
         }
@@ -124,7 +125,7 @@ public class KubernetesService {
                 client.namespaces().create(ns);
             }
         } catch (KubernetesClientException e) {
-            project.setStatus("При деплое проекта произошла ошибка");
+            project.setStatus(ProjectStatus.ERROR);
             projectRep.save(project);
             log.error("При деплое проекта произошла ошибка", e);
         }
@@ -136,7 +137,7 @@ public class KubernetesService {
                 createService(client, project);
                 createDeployment(client, project);
             } catch (KubernetesClientException e) {
-                project.setStatus("При деплое проекта произошла ошибка");
+                project.setStatus(ProjectStatus.ERROR);
                 projectRep.save(project);
                 log.error("При деплое проекта произошла ошибка", e);
             }
