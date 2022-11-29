@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.*;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.exception.DeployException;
@@ -21,6 +22,7 @@ import ru.freemiumhosting.master.repository.ProjectRep;
 import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
 import ru.freemiumhosting.master.service.ProjectService;
 
+@Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
@@ -72,6 +74,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setKubernetesName("project" + project.getId());
         generateProjectNodePort(project);
         kubernetesService.createKubernetesObjects(project);
+//        log.info("Skip generate kuber objects");
     }
 
     @Override

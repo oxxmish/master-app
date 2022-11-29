@@ -1,5 +1,6 @@
 package ru.freemiumhosting.master.service.impl;
 
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,14 @@ public class DockerImageBuilderService {
         log.info("Старт загрузки образа в registry");
         String destination = repository + "/" + project.getName() + ":" + project.getBranch();
         String kanikoDestination = registryUrl + "/" + destination;
-        String dockerPath = pathToProjects + "/" + project.getName() + "/Dockerfile";
-        String context = "/opt";
+        Path context = Path.of(pathToProjects, project.getName()).toAbsolutePath().normalize();
+        String dockerPath = context.resolve("Dockerfile").normalize().toString();
         Process process = new ProcessBuilder()
-                .command(String.format("/kaniko/executor --context=%s --dockerfile=%s --destination=%s", context, dockerPath, kanikoDestination))
-                .inheritIO()
-                .start();
+            .command("/kaniko/executor", "--context", context.toString(),
+                "--dockerfile", dockerPath, "--destination", kanikoDestination)
+            .directory(context.toFile())
+            .inheritIO()
+            .start();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new KanikoException("Ошибка при загрузке образа в dockerHub");
