@@ -20,4 +20,9 @@ public class ProfileController {
     public String getProfile(Model model) {
         return "Profile";
     }
+
+    @GetMapping("/about")
+    public String getAbout(Model model) {
+        return "About";
+    }
 }
