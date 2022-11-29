@@ -2,8 +2,6 @@ FROM gcr.io/kaniko-project/executor:v1.9.0-debug as builder
 FROM openjdk:11.0.16-jre
 
 ARG KUBECONFIG_PATH=./config.yaml
-
-
 ARG REGISTRY_URL=registry.hub.docker.com
 ARG REGISTRY_LOGIN="freemiumhosting"
 ARG REGISTRY_PASSWORD="freemiumhosting"

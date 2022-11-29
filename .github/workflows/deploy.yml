@@ -2,11 +2,11 @@ name: Build and Deploy to K8s
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "release/**" ]
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  KUBE_CONFIG_PATH: /opt/app/
+  KUBE_CONFIG_PATH: /opt/app
   KUBE_CONF_FILE: kubeconfig.yml
   APP: freemium-hosting
   IMAGE_TAG: ${{ github.sha }}
@@ -58,8 +58,10 @@ jobs:
       - name: Docker Login
         run: docker login --username="$REGISTRY_LOGIN" --password="$REGISTRY_PASSWORD"
       - name: Build with Docker
-        run: docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" \
-            --build-arg KUBECONFIG_PATH=${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} \
+        run: |
+          cp ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} ./config.yaml
+          docker build -t "$REGISTRY_LOGIN"/"$IMAGE_NAME":"$IMAGE_TAG" \
+            --build-arg KUBECONFIG_PATH="config.yaml" \
             --build-arg REGISTRY_URL="$REGISTRY_URL" \
             --build-arg REGISTRY_LOGIN="$REGISTRY_LOGIN" \
             --build-arg REGISTRY_PASSWORD="$REGISTRY_PASSWORD" .
