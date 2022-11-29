@@ -32,5 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### Files for local run ###
 *.db
 /src/main/resources/configs/config.yml
+*.jar
+*.tar.gz

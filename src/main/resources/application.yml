@@ -63,3 +63,6 @@ freemium:
           runnerImage: ${PY_RUN_IMAGE:python:3.9}
           appName: ${PY_APP_NAME:./app.py}
         docker: {}
+    registry:
+      url: ${$REGISTRY_URL:registry.hub.docker.com}
+      default-repo: freemiumhosting

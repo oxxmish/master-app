@@ -6,7 +6,10 @@ services:
       args:
         - JAR_FILE=./target/master-0.0.1-SNAPSHOT.jar
         - APP_NAME=freemium-hosting
-    volumes:
-      - "./testdb.db:/opt/app/db/testdb"
+        - KUBECONFIG_PATH=./src/main/resources/configs/config.yml
+#    volumes:
+#      - "./testdb.db:/opt/app/db/testdb"
     environment:
       - "DB_URL=jdbc:h2:file:/opt/app/db/testdb"
+    ports:
+      - 8080:8080
