@@ -74,7 +74,6 @@ public class ProjectServiceImpl implements ProjectService {
         project.setKubernetesName("project" + project.getId());
         generateProjectNodePort(project);
         kubernetesService.createKubernetesObjects(project);
-//        log.info("Skip generate kuber objects");
     }
 
     @Override
