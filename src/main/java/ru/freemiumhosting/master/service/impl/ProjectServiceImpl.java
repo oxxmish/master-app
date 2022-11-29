@@ -70,10 +70,12 @@ public class ProjectServiceImpl implements ProjectService {
                     project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
         }
         dockerImageBuilderService.pushImageToRegistry(project);
+        //TODO: delete tmp files
         projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
         project.setKubernetesName("project" + project.getId());
         generateProjectNodePort(project);
         kubernetesService.createKubernetesObjects(project);
+        //TODO: clear dockerhub repository
     }
 
     @Override

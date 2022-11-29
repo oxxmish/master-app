@@ -1,6 +1,8 @@
 package ru.freemiumhosting.master.service.impl;
 
 import java.nio.file.Path;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,7 @@ public class DockerImageBuilderService {
     @SneakyThrows
     public void pushImageToRegistry(Project project) {
         log.info("Старт загрузки образа в registry");
-        String destination = repository + "/" + project.getName() + ":" + project.getBranch();
+        String destination = repository + "/" + project.getName().toLowerCase() + ":" + UUID.randomUUID();
         String kanikoDestination = registryUrl + "/" + destination;
         Path context = Path.of(pathToProjects, project.getName()).toAbsolutePath().normalize();
         String dockerPath = context.resolve("Dockerfile").normalize().toString();
