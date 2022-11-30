@@ -14,6 +14,7 @@
 <section class="container" type="main" id="Проекты">
     <nav>
         <h1>Ваши проекты</h1>
+        <hr>
         <h1 th:if="${projects.empty}"> Проекты еще не созданы</h1>
         <table th:if="${!projects.empty}">
             <thead>
@@ -21,6 +22,7 @@
                 <th> Имя проекта</th>
                 <th> Ссылка на git</th>
                 <th> Статус проекта</th>
+                <th></th>
                 <th></th>
             </tr>
             </thead>
@@ -32,6 +34,11 @@
                 <td>
                     <form th:action="@{'/projects/'+${project.id}}">
                         <button>Настройки проекта</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{'/projects/delete/'+${project.id}}">
+                        <button>Удалить проект</button>
                     </form>
                 </td>
             </tr>

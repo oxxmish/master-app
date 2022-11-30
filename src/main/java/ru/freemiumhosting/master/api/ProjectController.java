@@ -4,6 +4,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -39,7 +40,7 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+                "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
     }
 
     @PostMapping("/api/updateProject")
@@ -55,7 +56,21 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/projects/{0}/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+                "redirect:/projects/errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+    }
+
+    @GetMapping("/projects/delete/{projectId}")
+    public String deleteProject(@PathVariable Long projectId) {
+        String errorMessage = null;
+        try {
+            Project project = projectService.findProjectById(projectId);
+            projectService.deleteProject(project);
+        } catch (Exception e) {
+            log.error("Error executing request", e);
+            errorMessage = e.getMessage();
+        }
+        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
+                "redirect:/projects", projectId, URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/deploy")

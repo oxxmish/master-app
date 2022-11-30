@@ -8,6 +8,8 @@ public interface ProjectService {
     void createProject(Project project) throws DeployException;
     void deployProject(Project project) throws DeployException;
     void updateProject(Project project) throws DeployException;
+
+    void deleteProject(Project project);
     Project getProjectDetails(Long projectId);
     List<Project> getAllProjects();
     Project findProjectById(Long projectId);
