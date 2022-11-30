@@ -91,6 +91,10 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLastLaunch(project.getCurrentLaunch());//После проверки на изменение состояния деплоя, обновляем буфферную переменную для следующих проверок
         projectRep.save(project);
     }
+    public void deleteProject(Project project){
+        projectRep.delete(project);
+        //TODO доработать
+    }
 
     @Override
     public Project getProjectDetails(Long projectId) {
