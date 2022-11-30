@@ -30,6 +30,9 @@ public class KubernetesService {
     @Value("${freemium.hosting.kubeconfig}")
     private String kubeConfigPath;
 
+    @Value("${freemium.hosting.containerPort}")
+    private Integer containerPort;
+
     public KubernetesClient createKubernetesApiClient() {
         System.setProperty("kubeconfig", kubeConfigPath);
         return new KubernetesClientBuilder().build();
@@ -56,7 +59,7 @@ public class KubernetesService {
             .withName(project.getName())
             .withImage(project.getRegistryDestination())
             .addNewPort()
-            .withContainerPort(80)
+            .withContainerPort(containerPort)
             .endPort()
             .endContainer()
             .endSpec()
@@ -83,7 +86,7 @@ public class KubernetesService {
             .withType("NodePort")
             .withPorts()
             .addNewPort()
-            .withPort(8080)
+            .withPort(containerPort)
             .withNodePort(project.getNodePort())
             .endPort()
             .withSelector(labels)
