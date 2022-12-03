@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Freemium Hosting</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/projects.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -33,19 +34,19 @@
                 <td><span th:text="${project.status}"> Status </span></td>
                 <td>
                     <form th:action="@{'/projects/'+${project.id}}">
-                        <button>Настройки проекта</button>
+                        <button class="btn btn-warning">Настройки проекта</button>
                     </form>
                 </td>
                 <td>
                     <form th:action="@{'/projects/delete/'+${project.id}}">
-                        <button>Удалить проект</button>
+                        <button class="btn btn-warning">Удалить проект</button>
                     </form>
                 </td>
             </tr>
             </tbody>
         </table>
         <form th:action="@{'/deploy'}">
-            <button class="button">Новый проект</button>
+            <button class="button btn btn-warning">Новый проект</button>
         </form>
     </nav>
 </section>

@@ -32,12 +32,9 @@ public class ProjectController {
         String errorMessage = null;
         try {
             projectService.createProject(project);
-        } catch (DeployException deployException) {
+        } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
-        } catch (Exception e) {
-            log.error("Error executing request", e);
-            errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
                 "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
@@ -48,12 +45,9 @@ public class ProjectController {
         String errorMessage = null;
         try {
             projectService.updateProject(project);
-        } catch (DeployException deployException) {
+        } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
-        } catch (Exception e) {
-            log.error("Error executing request", e);
-            errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
                 "redirect:/projects/errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));

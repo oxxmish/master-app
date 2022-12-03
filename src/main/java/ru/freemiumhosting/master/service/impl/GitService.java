@@ -19,6 +19,7 @@ public class GitService {
             .setDirectory(new File(gitClonePath)) //TODO: clean folder
             .setBranch(branch)
             .call()) {
+
         } catch (GitAPIException ex) {
             log.error("Возникла проблема при клонировании git репозитория", ex);
             throw new GitCloneException("Возникла проблема при клонировании git репозитория: " + ex.getMessage());
