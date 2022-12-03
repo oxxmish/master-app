@@ -51,13 +51,25 @@
                         <option value="Groovy">Groovy</option>
                     </select></td>
                 </tr>
-                <tr>
-                    <td></td>
-                    <td><i class="error-message" th:text="${errorMessage}"></i></td>
+                <tr class="label">
+                    <td colspan="2">
+                        <b>Переменные среды (чтобы удалить переменную - оставить поле "Название пустым")</b>
+                    </td>
+                </tr>
+                <tr th:each="env: ${envs}">
+                    <td><label>Название</label><input th:value="${env.key}" type="text" name="envNames"></td>
+                    <td><label>Значение</label><input th:value="${env.value}" type="text" name="envValues"></td>
+                </tr>
+                <tr id="addEnv">
+                    <td colspan="2">
+                        <button type="button" class="button btn btn-warning" onclick="addEnv(event)">Добавить</button>
+                    </td>
                 </tr>
                 <tr>
-                    <td></td>
-                    <td><input class="button btn btn-warning" type="submit" value="Сохранить изменения"></td>
+                    <td colspan="2"><i class="error-message" th:text="${errorMessage}"></i></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input class="button btn btn-warning" type="submit" value="Сохранить изменения"></td>
                 </tr>
             </table>
             <input type="hidden" th:field="*{currentLaunch}" id="currentLaunch">

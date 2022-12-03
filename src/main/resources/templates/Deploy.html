@@ -37,13 +37,25 @@
                         <option value="Docker">Docker</option>
                     </select></td>
                 </tr>
-                <tr>
-                    <td></td>
-                    <td><i class="error-message" th:text="${errorMessage}"></i></td>
+                <tr class="label">
+                    <td colspan="2">
+                        <b>Переменные среды (чтобы удалить переменную - оставить поле "Название пустым")</b>
+                    </td>
                 </tr>
                 <tr>
-                    <td></td>
-                    <td><input class="button btn btn-warning" type="submit" value="Задеплоить проект"></td>
+                    <td><label>Название</label><input type="text" th:field="*{envNames}"></td>
+                    <td><label>Значение</label><input type="text" th:field="*{envValues}"></td>
+                </tr>
+                <tr id="addEnv">
+                    <td colspan="2">
+                        <button type="button" class="button btn btn-warning" onclick="addEnv(event)">Добавить</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><i class="error-message" th:text="${errorMessage}"></i></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input class="button btn btn-warning" type="submit" value="Задеплоить проект"></td>
                 </tr>
             </table>
         </form>
