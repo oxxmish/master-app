@@ -10,9 +10,11 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +35,9 @@ public class KubernetesService {
     @Value("${freemium.hosting.containerPort}")
     private Integer containerPort;
 
+    @Value("user1")
+    private String namespace;
+
     public KubernetesClient createKubernetesApiClient() {
         System.setProperty("kubeconfig", kubeConfigPath);
         return new KubernetesClientBuilder().build();
@@ -40,34 +45,35 @@ public class KubernetesService {
 
     public void createDeployment(KubernetesClient client, Project project) {
         Deployment deployment = new DeploymentBuilder()
-            .withNewMetadata()
-            .withName(project.getKubernetesName())
-            .addToAnnotations("name", project.getKubernetesName())
-            .endMetadata()
-            .withNewSpec()
-            .withStrategy(new DeploymentStrategyBuilder().withType("Recreate").build())
-            .withReplicas(1)
-            .withNewSelector()
-            .addToMatchLabels("app.kubernetes.io/name", project.getKubernetesName())
-            .endSelector()
-            .withNewTemplate()
-            .withNewMetadata()
-            .addToLabels("app.kubernetes.io/name", project.getKubernetesName())
-            .endMetadata()
-            .withNewSpec()
-            .addNewContainer()
-            .withName(project.getName())
-            .withImage(project.getRegistryDestination())
-            .addNewPort()
-            .withContainerPort(containerPort)
-            .endPort()
-            .endContainer()
-            .endSpec()
-            .endTemplate()
-            .endSpec()
-            .build();
+                .withNewMetadata()
+                .withName(project.getKubernetesName())
+                .addToAnnotations("name", project.getKubernetesName())
+                .endMetadata()
+                .withNewSpec()
+                .withStrategy(new DeploymentStrategyBuilder().withType("Recreate").build())
+                .withReplicas(1)
+                .withNewSelector()
+                .addToMatchLabels("app.kubernetes.io/name", project.getKubernetesName())
+                .endSelector()
+                .withNewTemplate()
+                .withNewMetadata()
+                .addToLabels("app.kubernetes.io/name", project.getKubernetesName())
+                .endMetadata()
+                .withNewSpec()
+                .addNewContainer()
+                .withName(project.getName())
+                .withImage(project.getRegistryDestination())
+                //.withImage("nginx")//для теста локально
+                .addNewPort()
+                .withContainerPort(containerPort)
+                .endPort()
+                .endContainer()
+                .endSpec()
+                .endTemplate()
+                .endSpec()
+                .build();
 
-        client.apps().deployments().inNamespace("user1").create(deployment);
+        client.apps().deployments().inNamespace(namespace).create(deployment);
     }
 
     public void createService(KubernetesClient client, Project project) {
@@ -76,41 +82,41 @@ public class KubernetesService {
         HashMap<String, String> labels = new HashMap<>();
         labels.put("app.kubernetes.io/name", project.getKubernetesName());
         io.fabric8.kubernetes.api.model.Service service = new ServiceBuilder()
-            .withNewMetadata()
-            .withName(project.getKubernetesName())
-            .withNamespace("user1")
-            .withAnnotations(annotations)
-            .withLabels(labels)
-            .endMetadata()
-            .withNewSpec()
-            .withType("NodePort")
-            .withPorts()
-            .addNewPort()
-            .withPort(containerPort)
-            .withNodePort(project.getNodePort())
-            .endPort()
-            .withSelector(labels)
-            .endSpec()
-            .build();
+                .withNewMetadata()
+                .withName(project.getKubernetesName())
+                .withNamespace(namespace)
+                .withAnnotations(annotations)
+                .withLabels(labels)
+                .endMetadata()
+                .withNewSpec()
+                .withType("NodePort")
+                .withPorts()
+                .addNewPort()
+                .withPort(containerPort)
+                .withNodePort(project.getNodePort())
+                .endPort()
+                .withSelector(labels)
+                .endSpec()
+                .build();
 
-        client.services().inNamespace("user1").create(service);
+        client.services().inNamespace(namespace).create(service);
     }
 
 
     public void createNamespaceIfDontExist(KubernetesClient client, Project project) {
         NamespaceList namespaceList = client.namespaces().list();
         List<String> list =
-            namespaceList
-                .getItems()
-                .stream()
-                .map(v1Namespace -> v1Namespace.getMetadata().getName())
-                .collect(Collectors.toList());
-        if (!list.contains("user1")) {
+                namespaceList
+                        .getItems()
+                        .stream()
+                        .map(v1Namespace -> v1Namespace.getMetadata().getName())
+                        .collect(Collectors.toList());
+        if (!list.contains(namespace)) {
             Namespace ns = new NamespaceBuilder()
-                .withNewMetadata()
-                .withName("user1")
-                .endMetadata()
-                .build();
+                    .withNewMetadata()
+                    .withName(namespace)
+                    .endMetadata()
+                    .build();
             client.namespaces().create(ns);
         }
     }
@@ -128,6 +134,25 @@ public class KubernetesService {
             project.setStatus(ProjectStatus.ERROR);
             projectRep.save(project);
             log.error("При деплое проекта произошла ошибка", e);
+        }
+    }
+
+    public void deleteKubernetesObjects(Project project) {
+        try {
+            KubernetesClient client = createKubernetesApiClient();
+            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
+            client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
+        } catch (KubernetesClientException e) {
+            log.error("При удалении проекта произошла ошибка", e);
+        }
+    }
+
+    public void setDeploymentReplicas(Project project, Integer replicasNumber) {
+        try {
+            KubernetesClient client = createKubernetesApiClient();
+            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);
+        } catch (KubernetesClientException e) {
+            log.error("При изменении проекта произошла ошибка", e);
         }
     }
 

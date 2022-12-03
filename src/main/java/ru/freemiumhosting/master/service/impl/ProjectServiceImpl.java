@@ -79,21 +79,27 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void updateProject(Project project) throws DeployException {
+    public void updateProject(Project updatedProject) throws DeployException {
+        Project project = projectRep.findProjectById(updatedProject.getId());
+        project.setName(updatedProject.getName());
+        project.setLink(updatedProject.getLink());
+        project.setBranch(updatedProject.getBranch());
+        project.setLanguage(updatedProject.getLanguage());
+        project.setCurrentLaunch(updatedProject.getCurrentLaunch());
         if (project.userFinishesDeploy()) {
-            //TODO: вызываем сервис по сворачиванию проекта - удаляем все объекты из кубера по label name == project.getKubernetesName()
+            kubernetesService.setDeploymentReplicas(project,0);
             project.setStatus(ProjectStatus.STOPPED);
         }
         if (project.userStartsDeploy()) {
-            //TODO: вызываем сервис по развертыванию проекта
+            kubernetesService.setDeploymentReplicas(project,1);
             project.setStatus(ProjectStatus.RUNNING);
         }
         project.setLastLaunch(project.getCurrentLaunch());//После проверки на изменение состояния деплоя, обновляем буфферную переменную для следующих проверок
         projectRep.save(project);
     }
     public void deleteProject(Project project){
+        kubernetesService.deleteKubernetesObjects(project);
         projectRep.delete(project);
-        //TODO доработать
     }
 
     @Override

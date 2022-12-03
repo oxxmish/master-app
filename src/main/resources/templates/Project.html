@@ -24,7 +24,7 @@
                     <td><label for="launch">Запустить/Приостановить деплой:</label></td>
                     <td>
                         <label class="switch">
-                            <input required type="checkbox" id="launch" onclick="handleClick(this)"
+                            <input type="checkbox" id="launch" onclick="handleClick(this)"
                                    th:checked="*{currentLaunch}">
                             <span class="slider round"></span>
                         </label>
@@ -48,7 +48,7 @@
                         <option selected="selected" value="">Выберите язык программирования</option>
                         <option value="Java">Java</option>
                         <option value="Python">Python</option>
-                        <option value="Groovy">Groovy</option>
+<!--                        <option value="Groovy">Groovy</option>-->
                     </select></td>
                 </tr>
                 <tr>
@@ -61,8 +61,8 @@
                 </tr>
             </table>
             <input type="hidden" th:field="*{currentLaunch}" id="currentLaunch">
-            <input type="hidden" th:field="*{lastLaunch}" id="lastLaunch">
-            <input type="hidden" th:field="*{status}" id="status1">
+<!--            <input type="hidden" th:field="*{lastLaunch}" id="lastLaunch">-->
+<!--            <input type="hidden" th:field="*{status}" id="status1">-->
             <input type="hidden" th:field="*{id}" id="id">
 
         </form>
@@ -81,6 +81,6 @@
         }
     }
 </script>
->
+
 </body>
 </html>
