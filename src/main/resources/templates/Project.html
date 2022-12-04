@@ -53,12 +53,13 @@
                 </tr>
                 <tr class="label">
                     <td colspan="2">
-                        <b>Переменные среды (чтобы удалить переменную - оставить поле "Название пустым")</b>
+                        <b>Переменные среды</b>
                     </td>
                 </tr>
                 <tr th:each="env: ${envs}">
                     <td><label>Название</label><input th:value="${env.key}" type="text" name="envNames"></td>
-                    <td><label>Значение</label><input th:value="${env.value}" type="text" name="envValues"></td>
+                    <td><label>Значение</label><input th:value="${env.value}" type="password" name="envValues"></td>
+                    <td><label>Удалить</label><button type="button" class="btn btn-warning" onclick="removeEnv(event)">Удалить</button></td>
                 </tr>
                 <tr id="addEnv">
                     <td colspan="2">
