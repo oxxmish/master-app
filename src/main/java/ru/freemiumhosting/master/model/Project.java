@@ -24,6 +24,7 @@ public class Project {
     private String link;
     private String appLink;
     private String branch;
+    private String commitHash;
     private ProjectStatus status = ProjectStatus.UNDEFINED;//TODO change to enum
     private String language;
     private String executableName;

@@ -13,6 +13,7 @@ import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.dto.ProjectDto;
 import ru.freemiumhosting.master.exception.DeployException;
@@ -20,8 +21,10 @@ import ru.freemiumhosting.master.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
+import ru.freemiumhosting.master.service.DeployService;
 import ru.freemiumhosting.master.service.builderinfo.BuilderInfoService;
 import ru.freemiumhosting.master.service.ProjectService;
+import ru.freemiumhosting.master.service.CleanerService;
 
 @Slf4j
 @Service
@@ -36,6 +39,8 @@ public class ProjectServiceImpl implements ProjectService {
     // key - language, value - BuilderInfoService
     private final Map<String, BuilderInfoService> builderInfoServices;
     private final DockerImageBuilderService dockerImageBuilderService;
+    private final CleanerService cleanerService;
+    private final DeployService deployService;
     private final ProjectRep projectRep;
 
 
@@ -44,7 +49,7 @@ public class ProjectServiceImpl implements ProjectService {
                               KubernetesService kubernetesService, DockerfileBuilderService dockerfileBuilderService,
                               Collection<BuilderInfoService> builderInfoServices,
                               DockerImageBuilderService dockerImageBuilderService,
-                              ProjectRep projectRep) {
+                              CleanerService cleanerService, DeployService deployService, ProjectRep projectRep) {
         this.clonePath = clonePath;
         this.domainName=domainName;
         this.gitService = gitService;
@@ -54,19 +59,11 @@ public class ProjectServiceImpl implements ProjectService {
         this.dockerImageBuilderService = dockerImageBuilderService;
         this.builderInfoServices = builderInfoServices.stream().collect(Collectors.toMap(builderInfoService ->
                 builderInfoService.supportedLanguage().toLowerCase(Locale.ROOT), s -> s));
+        this.cleanerService = cleanerService;
+        this.deployService = deployService;
         this.projectRep = projectRep;
     }
 
-    @Override
-    public void createProject(Project project) throws DeployException {
-        //deployProject(project);
-        project.setStatus(ProjectStatus.CREATED);
-        projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
-        project.setKubernetesName("project" + project.getId());
-        generateProjectNodePort(project);
-        project.generateAppLink(domainName);
-        projectRep.save(project);
-    }
     @Override
     public void createProject(ProjectDto projectDto) throws DeployException {
         Project project = new Project();
@@ -86,20 +83,19 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public void createProject(Project project) throws DeployException {
+        //deployProject(project);
+        project.setStatus(ProjectStatus.CREATED);
+        projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
+        project.setKubernetesName("project" + project.getId());
+        generateProjectNodePort(project);
+        project.generateAppLink(domainName);
+        projectRep.save(project);
+    }
+
+    @Override
     public void deployProject(Project project) throws DeployException {
-        var projectPath = Path.of(clonePath, project.getName());
-        gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
-        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
-                        .validateProjectAndGetExecutableFileName(projectPath.toString());
-        project.setExecutableName(executableFileName);
-        if (!DOCKER_LANG.equals(project.getLanguage())) {
-                dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
-                                project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
-            }
-        dockerImageBuilderService.pushImageToRegistry(project);
-        //TODO: delete tmp files
-        kubernetesService.createKubernetesObjects(project);
-        //TODO: clear dockerhub repository
+        deployService.deployProject(project);
     }
     public void updateDeploy(Project project) throws DeployException {
         kubernetesService.deleteKubernetesObjects(project);
@@ -113,7 +109,7 @@ public class ProjectServiceImpl implements ProjectService {
             project.setStatus(ProjectStatus.RUNNING);
         }
     }
-    public void updateProject(Project project) throws DeployException {}
+
     @Override
     public void updateProject(ProjectDto projectDto) throws DeployException {
         Project project = projectRep.findProjectById(projectDto.getId());
