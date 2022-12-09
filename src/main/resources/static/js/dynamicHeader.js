@@ -17,3 +17,7 @@ function removeEnv(e) {
     e.preventDefault();
     e.target.parentElement.parentElement.remove();
 }
+
+function update() {
+    location.reload();
+}
