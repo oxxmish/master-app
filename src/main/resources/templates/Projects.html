@@ -46,6 +46,8 @@
             </tbody>
         </table>
         <form th:action="@{'/deploy'}">
+            <i class="error-message" th:text="${errorMessage}"></i>
+            <br/>
             <button class="button btn btn-warning">Новый проект</button>
         </form>
     </nav>

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.exception.DeployException;
+import ru.freemiumhosting.master.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
@@ -97,7 +98,8 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLastLaunch(project.getCurrentLaunch());//После проверки на изменение состояния деплоя, обновляем буфферную переменную для следующих проверок
         projectRep.save(project);
     }
-    public void deleteProject(Project project){
+
+    public void deleteProject(Project project) throws KuberException {
         kubernetesService.deleteKubernetesObjects(project);
         projectRep.delete(project);
     }

@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
@@ -121,7 +122,7 @@ public class KubernetesService {
         }
     }
 
-    public void createKubernetesObjects(Project project) {
+    public void createKubernetesObjects(Project project) throws KuberException {
         try {
             log.info("Generate kuber objects for project {}", project.getName());
             KubernetesClient client = createKubernetesApiClient();
@@ -130,29 +131,35 @@ public class KubernetesService {
             createDeployment(client, project);
             project.setStatus(ProjectStatus.RUNNING);
             projectRep.save(project);
-        } catch (KubernetesClientException e) {
+        } catch (Exception e) {
             project.setStatus(ProjectStatus.ERROR);
             projectRep.save(project);
             log.error("При деплое проекта произошла ошибка", e);
+            throw new KuberException("При деплое проекта произошла ошибка");
         }
     }
 
-    public void deleteKubernetesObjects(Project project) {
+    public void deleteKubernetesObjects(Project project) throws KuberException {
         try {
             KubernetesClient client = createKubernetesApiClient();
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
             client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
-        } catch (KubernetesClientException e) {
+        } catch (Exception e) {
+            project.setStatus(ProjectStatus.ERROR);
             log.error("При удалении проекта произошла ошибка", e);
+            throw new KuberException("При удалении проекта произошла ошибка");
         }
     }
 
-    public void setDeploymentReplicas(Project project, Integer replicasNumber) {
+    public void setDeploymentReplicas(Project project, Integer replicasNumber)
+        throws KuberException {
         try {
             KubernetesClient client = createKubernetesApiClient();
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);
-        } catch (KubernetesClientException e) {
+        } catch (Exception e) {
+            project.setStatus(ProjectStatus.ERROR);
             log.error("При изменении проекта произошла ошибка", e);
+            throw new KuberException("При изменении проекта произошла ошибка");
         }
     }
 

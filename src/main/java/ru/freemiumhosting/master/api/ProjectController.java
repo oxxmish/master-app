@@ -4,7 +4,6 @@ import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -55,7 +54,7 @@ public class ProjectController {
             errorMessage = deployException.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects/errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+                "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/projects/delete/{projectId}")
@@ -69,7 +68,7 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects", projectId, URLEncoder.encode(errorMessage));
+                "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/deploy")
@@ -82,9 +81,12 @@ public class ProjectController {
     }
 
     @GetMapping("/projects")
-    public String getProjects(Model model) {
+    public String getProjects(Model model, @RequestParam(required = false) String errorMessage) {
         List<Project> projects = projectService.getAllProjects();
         model.addAttribute("projects", projects);
+        if (!StringUtils.isEmpty(errorMessage)) {
+            model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
+        }
         return "Projects";
     }
 

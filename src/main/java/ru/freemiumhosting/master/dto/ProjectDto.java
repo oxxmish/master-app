@@ -11,6 +11,7 @@ import ru.freemiumhosting.master.model.ProjectStatus;
 
 @Data
 public class ProjectDto {
+    private Long id;
     private String name;
     private String link;
     private String branch;
