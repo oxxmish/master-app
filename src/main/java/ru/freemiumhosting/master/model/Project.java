@@ -7,6 +7,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.Set;
+
+import static javax.persistence.CascadeType.*;
 
 @Getter
 @Setter
@@ -30,10 +33,12 @@ public class Project {
     private String kubernetesName;
     private Integer nodePort;
 
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "project",cascade =ALL, orphanRemoval = false)
+    private Set<Env> envs;
 
     public Boolean userStartsDeploy() {
         return lastLaunch.equals("false") && currentLaunch.equals("true");
