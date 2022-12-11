@@ -34,8 +34,8 @@ public class ProjectController {
         String errorMessage = null;
         var project = projectMapper.toEntity(dto);
         try {
-            projectService.createProject(project);
-            envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
+            projectService.createProject(dto);
+            //envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
         } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
@@ -56,6 +56,19 @@ public class ProjectController {
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
                 "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
+    }
+    @GetMapping("/projects/updateDeploy/{projectId}")
+    public String updateDeploy(@PathVariable Long projectId) {
+        String errorMessage = null;
+        try {
+            Project project = projectService.findProjectById(projectId);
+            projectService.updateDeploy(project);
+        } catch (Exception e) {
+            log.error("Error executing request", e);
+            errorMessage = e.getMessage();
+        }
+        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
+                "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/projects/delete/{projectId}")

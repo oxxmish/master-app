@@ -3,10 +3,9 @@ package ru.freemiumhosting.master.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Value;
 
 import javax.persistence.*;
-import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.Set;
 
 import static javax.persistence.CascadeType.*;
@@ -23,6 +22,7 @@ public class Project {
     private Long id;
     private String name;
     private String link;
+    private String appLink;
     private String branch;
     private ProjectStatus status = ProjectStatus.UNDEFINED;//TODO change to enum
     private String language;
@@ -48,4 +48,5 @@ public class Project {
         return lastLaunch.equals("true") && currentLaunch.equals("false");
     }
 
+    public void generateAppLink(String domain){this.appLink= "http://" +domain+":"+this.nodePort;}
 }

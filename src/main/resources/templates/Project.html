@@ -35,7 +35,7 @@
                     <td><input required type="text" th:field="*{name}" id="name"></td>
                 </tr>
                 <tr>
-                    <td><label for="link">Ссылка на git-репозиторий:</label></td>
+                    <td><label for="link">Ссылка на репозиторий:</label></td>
                     <td><input required type="text" th:field="*{link}" id="link"></td>
                 </tr>
                 <tr>
@@ -48,7 +48,6 @@
                         <option selected="selected" value="">Выберите язык программирования</option>
                         <option value="Java">Java</option>
                         <option value="Python">Python</option>
-<!--                        <option value="Groovy">Groovy</option>-->
                     </select></td>
                 </tr>
                 <tr class="label">
@@ -74,8 +73,6 @@
                 </tr>
             </table>
             <input type="hidden" th:field="*{currentLaunch}" id="currentLaunch">
-<!--            <input type="hidden" th:field="*{lastLaunch}" id="lastLaunch">-->
-<!--            <input type="hidden" th:field="*{status}" id="status1">-->
             <input type="hidden" th:field="*{id}" id="id">
 
         </form>
