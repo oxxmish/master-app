@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.freemiumhosting.master.dto.ProjectDto;
 import ru.freemiumhosting.master.dto.ProjectMapper;
+import ru.freemiumhosting.master.model.Env;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
+import ru.freemiumhosting.master.service.impl.EnvService;
 
 @Slf4j
 @Controller
@@ -25,16 +28,14 @@ import ru.freemiumhosting.master.service.ProjectService;
 public class ProjectController {
     private final ProjectMapper projectMapper;
     private final ProjectService projectService;
-
-
+    private final EnvService envService;
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute ProjectDto dto) {
         String errorMessage = null;
         var project = projectMapper.toEntity(dto);
-//        log.info("Envs {}", dto.getEnvs()); //TODO: use envs
-//        dto.getEnvNames().stream().z
         try {
             projectService.createProject(project);
+            envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
         } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
@@ -42,19 +43,19 @@ public class ProjectController {
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
                 "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
     }
-
+    @Transactional
     @PostMapping("/api/updateProject")
     public String updateProject(@ModelAttribute ProjectDto dto) {
         String errorMessage = null;
-        var project = projectMapper.toEntity(dto); //TODO: need delete ALL previous envs and persist new ones
+        //var project = projectMapper.toEntity(dto); //TODO: need delete ALL previous envs and persist new ones
         try {
-            projectService.updateProject(project);
+            projectService.updateProject(dto);
         } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+                "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/projects/delete/{projectId}")
@@ -95,7 +96,7 @@ public class ProjectController {
                                  @RequestParam(required = false) String errorMessage) {
         Project project = projectService.findProjectById(projectId);
         model.addAttribute("project", project);
-        model.addAttribute("envs", Map.of("a", "b", "c", "1")); //TODO: set real envs
+        model.addAttribute("envs", envService.getEnvsByProject(project));
 
         if (!StringUtils.isEmpty(errorMessage)) {
             model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);

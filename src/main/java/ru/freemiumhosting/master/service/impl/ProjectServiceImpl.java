@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 import java.util.*;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.dto.ProjectDto;
 import ru.freemiumhosting.master.exception.DeployException;
 import ru.freemiumhosting.master.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
@@ -29,6 +29,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final String clonePath;
     private final GitService gitService;
+
+    private final EnvService envService;
     private final KubernetesService kubernetesService;
     private final DockerfileBuilderService dockerfileBuilderService;
     // key - language, value - BuilderInfoService
@@ -38,13 +40,14 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     public ProjectServiceImpl(@Value("${freemium.hosting.git-clone-path}") String clonePath,
-                              GitService gitService,
+                              GitService gitService, EnvService envService,
                               KubernetesService kubernetesService, DockerfileBuilderService dockerfileBuilderService,
                               Collection<BuilderInfoService> builderInfoServices,
                               DockerImageBuilderService dockerImageBuilderService,
                               ProjectRep projectRep) {
         this.clonePath = clonePath;
         this.gitService = gitService;
+        this.envService = envService;
         this.kubernetesService = kubernetesService;
         this.dockerfileBuilderService = dockerfileBuilderService;
         this.dockerImageBuilderService = dockerImageBuilderService;
@@ -64,12 +67,12 @@ public class ProjectServiceImpl implements ProjectService {
         var projectPath = Path.of(clonePath, project.getName());
         gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
         var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
-                .validateProjectAndGetExecutableFileName(projectPath.toString());
+                        .validateProjectAndGetExecutableFileName(projectPath.toString());
         project.setExecutableName(executableFileName);
         if (!DOCKER_LANG.equals(project.getLanguage())) {
-            dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
-                    project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
-        }
+                dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
+                                project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
+            }
         dockerImageBuilderService.pushImageToRegistry(project);
         //TODO: delete tmp files
         projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
@@ -79,14 +82,15 @@ public class ProjectServiceImpl implements ProjectService {
         //TODO: clear dockerhub repository
     }
 
+    public void updateProject(Project project) throws DeployException {}
     @Override
-    public void updateProject(Project updatedProject) throws DeployException {
-        Project project = projectRep.findProjectById(updatedProject.getId());
-        project.setName(updatedProject.getName());
-        project.setLink(updatedProject.getLink());
-        project.setBranch(updatedProject.getBranch());
-        project.setLanguage(updatedProject.getLanguage());
-        project.setCurrentLaunch(updatedProject.getCurrentLaunch());
+    public void updateProject(ProjectDto projectDto) throws DeployException {
+        Project project = projectRep.findProjectById(projectDto.getId());
+        project.setName(projectDto.getName());
+        project.setLink(projectDto.getLink());
+        project.setBranch(projectDto.getBranch());
+        project.setLanguage(projectDto.getLanguage());
+        project.setCurrentLaunch(projectDto.getCurrentLaunch());
         if (project.userFinishesDeploy()) {
             kubernetesService.setDeploymentReplicas(project,0);
             project.setStatus(ProjectStatus.STOPPED);
@@ -97,6 +101,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
         project.setLastLaunch(project.getCurrentLaunch());//После проверки на изменение состояния деплоя, обновляем буфферную переменную для следующих проверок
         projectRep.save(project);
+        envService.updateEnvs(projectDto.getEnvNames(),projectDto.getEnvValues(),project);
     }
 
     public void deleteProject(Project project) throws KuberException {
