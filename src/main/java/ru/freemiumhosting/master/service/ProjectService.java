@@ -11,7 +11,9 @@ public interface ProjectService {
     void createProject(Project project) throws DeployException;
     void deployProject(Project project) throws DeployException;
     void updateProject(Project project) throws DeployException;
+    void updateDeploy(Project project) throws DeployException;
     void updateProject(ProjectDto projectDto) throws DeployException;
+    void createProject(ProjectDto projectDto) throws DeployException;
 
     void deleteProject(Project project) throws KuberException;
     Project getProjectDetails(Long projectId);

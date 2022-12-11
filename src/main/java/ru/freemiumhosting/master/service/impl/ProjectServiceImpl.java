@@ -28,8 +28,8 @@ import ru.freemiumhosting.master.service.ProjectService;
 public class ProjectServiceImpl implements ProjectService {
 
     private final String clonePath;
+    private final String domainName;
     private final GitService gitService;
-
     private final EnvService envService;
     private final KubernetesService kubernetesService;
     private final DockerfileBuilderService dockerfileBuilderService;
@@ -40,12 +40,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     public ProjectServiceImpl(@Value("${freemium.hosting.git-clone-path}") String clonePath,
-                              GitService gitService, EnvService envService,
+                              GitService gitService, EnvService envService,@Value("${freemium.hosting.registry.default-repo}") String domainName,
                               KubernetesService kubernetesService, DockerfileBuilderService dockerfileBuilderService,
                               Collection<BuilderInfoService> builderInfoServices,
                               DockerImageBuilderService dockerImageBuilderService,
                               ProjectRep projectRep) {
         this.clonePath = clonePath;
+        this.domainName=domainName;
         this.gitService = gitService;
         this.envService = envService;
         this.kubernetesService = kubernetesService;
@@ -58,8 +59,30 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void createProject(Project project) throws DeployException {
-        deployProject(project);
+        //deployProject(project);
+        project.setStatus(ProjectStatus.CREATED);
+        projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
+        project.setKubernetesName("project" + project.getId());
+        generateProjectNodePort(project);
+        project.generateAppLink(domainName);
         projectRep.save(project);
+    }
+    @Override
+    public void createProject(ProjectDto projectDto) throws DeployException {
+        Project project = new Project();
+        project.setName(projectDto.getName());
+        project.setLink(projectDto.getLink());
+        project.setBranch(projectDto.getBranch());
+        project.setLanguage(projectDto.getLanguage());
+        project.setStatus(ProjectStatus.CREATED);
+        //project.setCurrentLaunch(projectDto.getCurrentLaunch());
+        //project.setCurrentLaunch(projectDto.getCurrentLaunch());
+        projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
+        project.setKubernetesName("project" + project.getId());
+        generateProjectNodePort(project);
+        project.generateAppLink(domainName);
+        projectRep.save(project);
+        envService.createEnvs(projectDto.getEnvNames(),projectDto.getEnvValues(),project);
     }
 
     @Override
@@ -75,13 +98,21 @@ public class ProjectServiceImpl implements ProjectService {
             }
         dockerImageBuilderService.pushImageToRegistry(project);
         //TODO: delete tmp files
-        projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
-        project.setKubernetesName("project" + project.getId());
-        generateProjectNodePort(project);
         kubernetesService.createKubernetesObjects(project);
         //TODO: clear dockerhub repository
     }
-
+    public void updateDeploy(Project project) throws DeployException {
+        kubernetesService.deleteKubernetesObjects(project);
+        deployProject(project);
+        if (project.getCurrentLaunch().equals("false")) {
+            kubernetesService.setDeploymentReplicas(project,0);
+            project.setStatus(ProjectStatus.STOPPED);
+        }
+        else if (project.getCurrentLaunch().equals("true")) {
+            kubernetesService.setDeploymentReplicas(project,1);
+            project.setStatus(ProjectStatus.RUNNING);
+        }
+    }
     public void updateProject(Project project) throws DeployException {}
     @Override
     public void updateProject(ProjectDto projectDto) throws DeployException {
