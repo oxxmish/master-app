@@ -94,6 +94,16 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deployProject(Project project) throws DeployException {
+        var projectPath = Path.of(clonePath, project.getName());
+        String commitHash = gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
+        project.setCommitHash(commitHash);
+        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
+                .validateProjectAndGetExecutableFileName(projectPath.toString());
+        project.setExecutableName(executableFileName);
+        if (!DOCKER_LANG.equals(project.getLanguage())) {
+            dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
+                    project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
+        }
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         projectRep.save(project);
         deployService.deployProject(project);
