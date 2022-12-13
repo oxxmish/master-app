@@ -27,6 +27,7 @@ import ru.freemiumhosting.master.repository.ProjectRep;
 @RequiredArgsConstructor
 public class KubernetesService {
     private final ProjectRep projectRep;
+    private final EnvService envService;
 
     @Value("${freemium.hosting.kubeconfig}")
     private String kubeConfigPath;
@@ -45,10 +46,9 @@ public class KubernetesService {
     public void createDeployment(KubernetesClient client, Project project) {
         List<EnvVar> envs = Collections.emptyList();
         if (project.getEnvs() != null)
-            envs = project
-                    .getEnvs()
-                    .stream()
-                    .map(env -> new EnvVarBuilder().withName(env.getEnv_key()).withValue(env.getEnv_value()).build()).collect(Collectors.toList());
+            envs = envService.getEnvsByProject(project).entrySet().stream()
+                    .map(entry -> new EnvVarBuilder().withName(entry.getKey()).withValue(entry.getValue()).build()).collect(Collectors.toList());
+        log.info("envs ", envs);
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(project.getKubernetesName())
