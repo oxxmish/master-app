@@ -3,7 +3,6 @@ package ru.freemiumhosting.master.api;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -16,8 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.freemiumhosting.master.dto.ProjectDto;
-import ru.freemiumhosting.master.dto.ProjectMapper;
-import ru.freemiumhosting.master.model.Env;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
 import ru.freemiumhosting.master.service.impl.EnvService;
@@ -26,13 +23,12 @@ import ru.freemiumhosting.master.service.impl.EnvService;
 @Controller
 @RequiredArgsConstructor
 public class ProjectController {
-    private final ProjectMapper projectMapper;
     private final ProjectService projectService;
     private final EnvService envService;
+
     @PostMapping("/api/createProject")
     public String createProject(@ModelAttribute ProjectDto dto) {
         String errorMessage = null;
-        var project = projectMapper.toEntity(dto);
         try {
             projectService.createProject(dto);
             //envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
@@ -41,8 +37,9 @@ public class ProjectController {
             errorMessage = deployException.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+            "redirect:/deploy/?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
+
     @Transactional
     @PostMapping("/api/updateProject")
     public String updateProject(@ModelAttribute ProjectDto dto) {
@@ -55,8 +52,9 @@ public class ProjectController {
             errorMessage = deployException.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
+            "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
     }
+
     @GetMapping("/projects/updateDeploy/{projectId}")
     public String updateDeploy(@PathVariable Long projectId) {
         String errorMessage = null;
@@ -68,7 +66,7 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
+            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/projects/delete/{projectId}")
@@ -82,7 +80,7 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
+            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/deploy")
