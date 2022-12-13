@@ -1,9 +1,6 @@
 package ru.freemiumhosting.master.service.impl;
 
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
@@ -11,6 +8,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +43,12 @@ public class KubernetesService {
     }
 
     public void createDeployment(KubernetesClient client, Project project) {
+        List<EnvVar> envs = Collections.emptyList();
+        if (project.getEnvs() != null)
+            envs = project
+                    .getEnvs()
+                    .stream()
+                    .map(env -> new EnvVarBuilder().withName(env.getEnv_key()).withValue(env.getEnv_value()).build()).collect(Collectors.toList());
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(project.getKubernetesName())
@@ -63,6 +67,7 @@ public class KubernetesService {
                 .withNewSpec()
                 .addNewContainer()
                 .withName(project.getName())
+                .withEnv(envs)
                 .withImage(project.getRegistryDestination())
                 //.withImage("nginx")//для теста локально
                 .addNewPort()
@@ -152,7 +157,7 @@ public class KubernetesService {
     }
 
     public void setDeploymentReplicas(Project project, Integer replicasNumber)
-        throws KuberException {
+            throws KuberException {
         try {
             KubernetesClient client = createKubernetesApiClient();
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);

@@ -44,7 +44,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     public ProjectServiceImpl(@Value("${freemium.hosting.git-clone-path}") String clonePath,
-                              GitService gitService, EnvService envService,@Value("${freemium.hosting.registry.default-repo}") String domainName,
+                              GitService gitService, EnvService envService,
+                              @Value("${freemium.hosting.domain-name}") String domainName,
                               KubernetesService kubernetesService, DockerfileBuilderService dockerfileBuilderService,
                               Collection<BuilderInfoService> builderInfoServices,
                               DockerImageBuilderService dockerImageBuilderService,
