@@ -13,7 +13,6 @@ import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.dto.ProjectDto;
 import ru.freemiumhosting.master.exception.DeployException;
@@ -95,19 +94,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deployProject(Project project) throws DeployException {
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        projectRep.save(project);
         deployService.deployProject(project);
-    }
-    public void updateDeploy(Project project) throws DeployException {
-        kubernetesService.deleteKubernetesObjects(project);
-        deployProject(project);
-        if (project.getCurrentLaunch().equals("false")) {
-            kubernetesService.setDeploymentReplicas(project,0);
-            project.setStatus(ProjectStatus.STOPPED);
-        }
-        else if (project.getCurrentLaunch().equals("true")) {
-            kubernetesService.setDeploymentReplicas(project,1);
-            project.setStatus(ProjectStatus.RUNNING);
-        }
     }
 
     @Override
@@ -129,6 +118,19 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLastLaunch(project.getCurrentLaunch());//После проверки на изменение состояния деплоя, обновляем буфферную переменную для следующих проверок
         projectRep.save(project);
         envService.updateEnvs(projectDto.getEnvNames(),projectDto.getEnvValues(),project);
+    }
+
+    public void updateDeploy(Project project) throws DeployException {
+        kubernetesService.deleteKubernetesObjects(project);
+        deployProject(project);
+        if (project.getCurrentLaunch().equals("false")) {
+            kubernetesService.setDeploymentReplicas(project,0);
+            project.setStatus(ProjectStatus.STOPPED);
+        }
+        else if (project.getCurrentLaunch().equals("true")) {
+            kubernetesService.setDeploymentReplicas(project,1);
+            project.setStatus(ProjectStatus.RUNNING);
+        }
     }
 
     public void deleteProject(Project project) throws KuberException {
