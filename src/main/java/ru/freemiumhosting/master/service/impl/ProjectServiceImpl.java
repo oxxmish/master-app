@@ -105,6 +105,7 @@ public class ProjectServiceImpl implements ProjectService {
                     project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
         }
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        project.setCurrentLaunch("true");
         projectRep.save(project);
         deployService.deployProject(project);
     }
@@ -133,14 +134,14 @@ public class ProjectServiceImpl implements ProjectService {
     public void updateDeploy(Project project) throws DeployException {
         kubernetesService.deleteKubernetesObjects(project);
         deployProject(project);
-        if (project.getCurrentLaunch().equals("false")) {
-            kubernetesService.setDeploymentReplicas(project,0);
-            project.setStatus(ProjectStatus.STOPPED);
-        }
-        else if (project.getCurrentLaunch().equals("true")) {
-            kubernetesService.setDeploymentReplicas(project,1);
-            project.setStatus(ProjectStatus.RUNNING);
-        }
+//        if (project.getCurrentLaunch().equals("false")) {
+//            kubernetesService.setDeploymentReplicas(project,0);
+//            project.setStatus(ProjectStatus.STOPPED);
+//        }
+//        else if (project.getCurrentLaunch().equals("true")) {
+//            kubernetesService.setDeploymentReplicas(project,1);
+//            project.setStatus(ProjectStatus.RUNNING);
+//        }
     }
 
     public void deleteProject(Project project) throws KuberException {
