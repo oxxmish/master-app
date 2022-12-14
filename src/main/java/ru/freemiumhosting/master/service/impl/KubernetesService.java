@@ -66,7 +66,7 @@ public class KubernetesService {
                 .endMetadata()
                 .withNewSpec()
                 .addNewContainer()
-                .withName(project.getName())
+                .withName("app")
                 .withEnv(envs)
                 .withImage(project.getRegistryDestination())
                 //.withImage("nginx")//для теста локально
