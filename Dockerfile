@@ -42,6 +42,8 @@ WORKDIR /opt/app/
 COPY ${JAR_FILE} /opt/app/${APP_NAME}.jar
 COPY ${KUBECONFIG_PATH} /opt/app/config.yaml
 
+RUN chmod -w /opt/app/${APP_NAME}.jar && chmod -w /opt/app/config.yaml
+
 ENV KUBECONFIG_PATH /opt/app/config.yaml
 
 ENV REGISTRY_URL $REGISTRY_URL
@@ -59,6 +61,7 @@ RUN mkdir -p /kaniko/.docker && \
 #           /kaniko/executor  --context /opt/ \
 #                 --dockerfile /opt/Dockerfile \
 #                 --destination $REGISTRY_URL/freemiumhosting/test-app2:latest
+
 
 CMD exec java \
     ${JAVA_DEFAULT_OPTS} \
