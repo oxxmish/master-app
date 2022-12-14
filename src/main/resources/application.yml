@@ -50,6 +50,7 @@ spring:
 
 freemium:
   hosting:
+    domain-name: freemium-hosting.ml
     git-clone-path: ${GIT_CLONE_TEMP_PATH:./tmp/git-clone}
     kubeconfig: ${KUBECONFIG_PATH:./src/main/resources/configs/config.yml}
     containerPort: ${CONTAINER_PORT:80}

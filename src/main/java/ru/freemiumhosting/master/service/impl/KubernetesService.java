@@ -1,9 +1,6 @@
 package ru.freemiumhosting.master.service.impl;
 
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
@@ -11,6 +8,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +27,7 @@ import ru.freemiumhosting.master.repository.ProjectRep;
 @RequiredArgsConstructor
 public class KubernetesService {
     private final ProjectRep projectRep;
+    private final EnvService envService;
 
     @Value("${freemium.hosting.kubeconfig}")
     private String kubeConfigPath;
@@ -45,6 +44,11 @@ public class KubernetesService {
     }
 
     public void createDeployment(KubernetesClient client, Project project) {
+        List<EnvVar> envs = Collections.emptyList();
+        if (project.getEnvs() != null)
+            envs = envService.getEnvsByProject(project).entrySet().stream()
+                    .map(entry -> new EnvVarBuilder().withName(entry.getKey()).withValue(entry.getValue()).build()).collect(Collectors.toList());
+        log.info("envs ", envs);
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(project.getKubernetesName())
@@ -62,7 +66,8 @@ public class KubernetesService {
                 .endMetadata()
                 .withNewSpec()
                 .addNewContainer()
-                .withName(project.getName())
+                .withName("app")
+                .withEnv(envs)
                 .withImage(project.getRegistryDestination())
                 //.withImage("nginx")//для теста локально
                 .addNewPort()
@@ -145,14 +150,14 @@ public class KubernetesService {
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
             client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
         } catch (Exception e) {
-            project.setStatus(ProjectStatus.ERROR);
+//            project.setStatus(ProjectStatus.ERROR);
             log.error("При удалении проекта произошла ошибка", e);
-            throw new KuberException("При удалении проекта произошла ошибка");
+//            throw new KuberException("При удалении проекта произошла ошибка");
         }
     }
 
     public void setDeploymentReplicas(Project project, Integer replicasNumber)
-        throws KuberException {
+            throws KuberException {
         try {
             KubernetesClient client = createKubernetesApiClient();
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);
