@@ -150,9 +150,9 @@ public class KubernetesService {
             client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
             client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
         } catch (Exception e) {
-            project.setStatus(ProjectStatus.ERROR);
+//            project.setStatus(ProjectStatus.ERROR);
             log.error("При удалении проекта произошла ошибка", e);
-            throw new KuberException("При удалении проекта произошла ошибка");
+//            throw new KuberException("При удалении проекта произошла ошибка");
         }
     }
 
