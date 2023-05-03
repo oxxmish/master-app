@@ -45,6 +45,8 @@ paths:
           description: "Authorization unsuccessful"
   /projects:
     get:
+      tags:
+        - projects
       summary: "get all user's projects"
       security:
         - basicAuth: [ ]
@@ -60,6 +62,8 @@ paths:
         '403':
           $ref: "#/components/responses/UnauthorizedError"
     post:
+      tags:
+        - projects
       summary: "create new project"
       security:
         - basicAuth: [ ]
@@ -75,9 +79,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProjectUserCard"
-
   /projects/{id}:
     get:
+      tags:
+        - projects
       summary: "get detailed info of project"
       security:
         - basicAuth: []
@@ -95,9 +100,144 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/ProjectUserCard"
+                $ref: "#/components/schemas/ProjectUserCard"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+    put:
+      tags:
+        - projects
+      summary: "edit project by user"
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to edit"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditProjectUserCard"
+      responses:
+        '200':
+          description: "Project's info updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectUserCard"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /projects/{id}/rebuild:
+    post:
+      tags:
+        - projects
+      summary: "rebuild project by user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to rebuild"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "Project rebuild updated successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /projects/{id}/start:
+    post:
+      tags:
+        - projects
+      summary: "start project by user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to start"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "Project started successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /projects/{id}/stop:
+    post:
+      tags:
+        - projects
+      summary: "stop project by user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to stop"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "Project stopped successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /projects/{id}/logs:
+    get:
+      tags:
+        - projects
+      summary: "stop project by user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to stop"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          description: "Дата с которой необходимо получить лог"
+          schema:
+            type: string
+            format: date-time
+            pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - name: endDate
+          in: query
+          description: "Дата по которую необходимо получить лог"
+          schema:
+            type: string
+            format: date-time
+            pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - name: asFile
+          in: query
+          description: "download logs as file. default is false"
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: "Logs retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Logs"
+
         '403':
           $ref: "#/components/responses/UnauthorizedError"
 
@@ -170,13 +310,16 @@ components:
           type: integer
           format: int64
           description: "ID of project."
+          example: 1
         name:
           type: string
           description: "Name"
+          example: "Project name"
         description:
           type: string
           format: email
           description: "Description"
+          example: "Description"
         status:
           type: string
           enum:
@@ -184,12 +327,14 @@ components:
             - STOPPED
             - ERROR
           description: "Status"
+          example: "ACTIVE"
         type:
           type: string
           enum:
             - DOCKER
             - PYTHON
             - JAVA
+          example: "JAVA"
         gitUrl:
           type: string
           example: "https://github.com/bratzelk/spring-boot-hello-world.git"
@@ -205,6 +350,51 @@ components:
           items:
             type: string
             example: "SERVER_PORT=8080"
+    EditProjectUserCard:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: "ID of project."
+          example: 1
+        name:
+          type: string
+          description: "Name"
+          example: "Project name"
+        description:
+          type: string
+          format: email
+          description: "Description"
+          example: "Description"
+        type:
+          type: string
+          enum:
+            - DOCKER
+            - PYTHON
+            - JAVA
+          example: "JAVA"
+        gitUrl:
+          type: string
+          example: "https://github.com/bratzelk/spring-boot-hello-world.git"
+          description: "git repository of deployed app"
+        ports:
+          type: array
+          items:
+            type: string
+            format: int32
+            example: "8080:8080"
+        envs:
+          type: array
+          items:
+            type: string
+            example: "SERVER_PORT=8080"
+    Logs:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "2019-03-05 10:57:51.112  INFO 45469 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/7.0.52 \n 2019-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext \n 2019-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 1358 ms \n 2019-03-05 10:57:51.698  INFO 45469 --- [ost-startStop-1] o.s.b.c.e.ServletRegistrationBean        : Mapping servlet: 'dispatcherServlet' to [/] \n 2019-03-05 10:57:51.702  INFO 45469 --- [ost-startStop-1] o.s.b.c.embedded.FilterRegistrationBean  : Mapping filter: 'hiddenHttpMethodFilter' to: [/*] UnauthorizedError: description: Unauthorized access error"
   responses:
     UnauthorizedError:
       description: "Unauthorized access error"
