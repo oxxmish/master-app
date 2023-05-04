@@ -58,7 +58,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Project"
+                  $ref: "#/components/schemas/ProjectUserCard"
         '403':
           $ref: "#/components/responses/UnauthorizedError"
     post:
@@ -129,6 +129,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProjectUserCard"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+    delete:
+      tags:
+        - projects
+      summary: "delete project"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of the project to delete"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "Project's deleted successfully"
         '403':
           $ref: "#/components/responses/UnauthorizedError"
 
@@ -241,6 +261,103 @@ paths:
         '403':
           $ref: "#/components/responses/UnauthorizedError"
 
+  /projects/adminView:
+    get:
+      tags:
+        - projects
+      summary: "get all projects"
+      security:
+        - basicAuth: [ ]
+      responses:
+        '200':
+          description: "Projects retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/AdminView"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users:
+    get:
+      tags:
+        - users
+      summary: "retrieve user's"
+      security:
+        - basicAuth: [ ]
+      responses:
+        '200':
+          description: "User's retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags:
+        - users
+      summary: "create new user"
+      security:
+        - basicAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditUser"
+      responses:
+        '200':
+          description: "User creation successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{id}:
+    put:
+      tags:
+        - users
+      summary: "edit  user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of user"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditUser"
+      responses:
+        '200':
+          description: "User edit successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
+    delete:
+      tags:
+        - users
+      summary: "delete  user"
+      security:
+        - basicAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: "ID of user"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "User edit successfully"
+        '403':
+          $ref: "#/components/responses/UnauthorizedError"
 components:
   securitySchemes:
     basicAuth:
@@ -268,41 +385,6 @@ components:
             - STOPPED
             - ERROR
           description: "Status"
-        createdDate:
-          type: string
-          format: date-time
-          pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-          example: "2023-05-01T14:30:00.000-0700"
-        cpuConsumption:
-          type: number
-          format: double
-          example: 0.5
-          description: "cpu consumption metric at this time"
-        cpuRequest:
-          type: number
-          format: double
-          example: 1
-          description: "cpu requested for this project"
-        ramConsumption:
-          type: number
-          format: double
-          example: 0.5
-          description: "ram consumption metric at this time"
-        ramRequest:
-          type: number
-          format: double
-          example: 1
-          description: "ram requested for this project"
-        storageConsumption:
-          type: number
-          format: double
-          example: 0.5
-          description: "storage consumption metric at this time"
-        storageRequest:
-          type: number
-          format: double
-          example: 1
-          description: "storage requested for this project"
     ProjectUserCard:
       type: object
       properties:
@@ -339,6 +421,18 @@ components:
           type: string
           example: "https://github.com/bratzelk/spring-boot-hello-world.git"
           description: "git repository of deployed app"
+        gitBranch:
+          type: string
+          example: "master"
+          description: "git branch of deployed app"
+        ownerId:
+          type: number
+          example: 1
+          description: "user id of project's owner"
+        ownerName:
+          type: string
+          example: "user1"
+          description: "username of project's owner"
         ports:
           type: array
           items:
@@ -350,6 +444,41 @@ components:
           items:
             type: string
             example: "SERVER_PORT=8080"
+        createdDate:
+          type: string
+          format: date-time
+          pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+          example: "2023-05-01T14:30:00.000-0700"
+        cpuConsumption:
+          type: number
+          format: double
+          example: 0.5
+          description: "cpu consumption metric at this time"
+        cpuRequest:
+          type: number
+          format: double
+          example: 1
+          description: "cpu requested for this project"
+        ramConsumption:
+          type: number
+          format: double
+          example: 0.5
+          description: "ram consumption metric at this time"
+        ramRequest:
+          type: number
+          format: double
+          example: 1
+          description: "ram requested for this project"
+        storageConsumption:
+          type: number
+          format: double
+          example: 0.5
+          description: "storage consumption metric at this time"
+        storageRequest:
+          type: number
+          format: double
+          example: 1
+          description: "storage requested for this project"
     EditProjectUserCard:
       type: object
       properties:
@@ -378,6 +507,10 @@ components:
           type: string
           example: "https://github.com/bratzelk/spring-boot-hello-world.git"
           description: "git repository of deployed app"
+        gitBranch:
+          type: string
+          example: "master"
+          description: "git branch of deployed app"
         ports:
           type: array
           items:
@@ -389,12 +522,119 @@ components:
           items:
             type: string
             example: "SERVER_PORT=8080"
+    AdminView:
+      type: object
+      properties:
+        clusterStatistics:
+          type: object
+          properties:
+            currentCpu:
+              type: number
+              example: 4
+            availibleCpu:
+              type: number
+              example: 10
+            currentRam:
+              type: number
+              example: 10
+            availibleRam:
+              type: number
+              example: 20
+            currentStorage:
+              type: number
+              example: 20
+            availibleStorage:
+              type: number
+              example: 100
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectUserCard"
     Logs:
       type: object
       properties:
         value:
           type: string
           example: "2019-03-05 10:57:51.112  INFO 45469 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/7.0.52 \n 2019-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext \n 2019-03-05 10:57:51.253  INFO 45469 --- [ost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 1358 ms \n 2019-03-05 10:57:51.698  INFO 45469 --- [ost-startStop-1] o.s.b.c.e.ServletRegistrationBean        : Mapping servlet: 'dispatcherServlet' to [/] \n 2019-03-05 10:57:51.702  INFO 45469 --- [ost-startStop-1] o.s.b.c.embedded.FilterRegistrationBean  : Mapping filter: 'hiddenHttpMethodFilter' to: [/*] UnauthorizedError: description: Unauthorized access error"
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        name:
+          type: string
+          example: "user1"
+        createdDate:
+          type: string
+          format: date-time
+          pattern: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+          example: "2023-05-01T14:30:00.000-0700"
+        currentCpu:
+          type: number
+          example: 4
+        requestCpu:
+          type: number
+          example: 8
+        availibleCpu:
+          type: number
+          example: 10
+        currentRam:
+          type: number
+          example: 10
+        requestRam:
+          type: number
+          example: 15
+        availibleRam:
+          type: number
+          example: 20
+        currentStorage:
+          type: number
+          example: 20
+        requestStorage:
+          type: number
+          example: 50
+        availibleStorage:
+          type: number
+          example: 100
+    EditUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "user1"
+        password:
+          type: string
+          example: "qwe123"
+        currentCpu:
+          type: number
+          example: 4
+        requestCpu:
+          type: number
+          example: 8
+        availibleCpu:
+          type: number
+          example: 10
+        currentRam:
+          type: number
+          example: 10
+        requestRam:
+          type: number
+          example: 15
+        availibleRam:
+          type: number
+          example: 20
+        currentStorage:
+          type: number
+          example: 20
+        requestStorage:
+          type: number
+          example: 50
+        availibleStorage:
+          type: number
+          example: 100
+
+
   responses:
     UnauthorizedError:
       description: "Unauthorized access error"
