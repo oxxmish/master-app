@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Freemium Hosting</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/projects.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -20,8 +21,9 @@
             <thead>
             <tr>
                 <th> Имя проекта</th>
-                <th> Ссылка на git</th>
+                <th> Ссылка на проект</th>
                 <th> Статус проекта</th>
+                <th><button class="btn btn-warning" onclick="update()">Обновить список</button></th>
                 <th></th>
                 <th></th>
             </tr>
@@ -29,23 +31,30 @@
             <tbody>
             <tr th:each="project : ${projects}">
                 <td><span th:text="${project.name}"> Title </span></td>
-                <td><a th:href="${project.link}" th:text="${project.link}" target="_blank"> Link </a></td>
+                <td><a th:href="${project.appLink}" th:text="${project.appLink}" target="_blank"> Link </a></td>
                 <td><span th:text="${project.status}"> Status </span></td>
                 <td>
+                    <form th:action="@{'/projects/updateDeploy/'+${project.id}}">
+                        <button class="btn btn-warning">Запустить деплой</button>
+                    </form>
+                </td>
+                <td>
                     <form th:action="@{'/projects/'+${project.id}}">
-                        <button>Настройки проекта</button>
+                        <button class="btn btn-warning">Настройки проекта</button>
                     </form>
                 </td>
                 <td>
                     <form th:action="@{'/projects/delete/'+${project.id}}">
-                        <button>Удалить проект</button>
+                        <button class="btn btn-warning">Удалить проект</button>
                     </form>
                 </td>
             </tr>
             </tbody>
         </table>
         <form th:action="@{'/deploy'}">
-            <button class="button">Новый проект</button>
+            <i class="error-message" th:text="${errorMessage}"></i>
+            <br/>
+            <button class="button btn btn-warning">Новый проект</button>
         </form>
     </nav>
 </section>

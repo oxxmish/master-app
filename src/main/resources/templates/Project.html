@@ -24,7 +24,7 @@
                     <td><label for="launch">Запустить/Приостановить деплой:</label></td>
                     <td>
                         <label class="switch">
-                            <input required type="checkbox" id="launch" onclick="handleClick(this)"
+                            <input type="checkbox" id="launch" onclick="handleClick(this)"
                                    th:checked="*{currentLaunch}">
                             <span class="slider round"></span>
                         </label>
@@ -35,7 +35,7 @@
                     <td><input required type="text" th:field="*{name}" id="name"></td>
                 </tr>
                 <tr>
-                    <td><label for="link">Ссылка на git-репозиторий:</label></td>
+                    <td><label for="link">Ссылка на репозиторий:</label></td>
                     <td><input required type="text" th:field="*{link}" id="link"></td>
                 </tr>
                 <tr>
@@ -48,21 +48,32 @@
                         <option selected="selected" value="">Выберите язык программирования</option>
                         <option value="Java">Java</option>
                         <option value="Python">Python</option>
-                        <option value="Groovy">Groovy</option>
+                        <option value="Docker">Docker</option>
                     </select></td>
                 </tr>
-                <tr>
-                    <td></td>
-                    <td><i class="error-message" th:text="${errorMessage}"></i></td>
+                <tr class="label">
+                    <td colspan="2">
+                        <b>Переменные среды</b>
+                    </td>
+                </tr>
+                <tr th:each="env: ${envs}">
+                    <td><label>Название</label><input th:value="${env.key}" type="text" name="envNames"></td>
+                    <td><label>Значение</label><input th:value="${env.value}" type="password" name="envValues"></td>
+                    <td><label>Удалить</label><button type="button" class="btn btn-warning" onclick="removeEnv(event)">Удалить</button></td>
+                </tr>
+                <tr id="addEnv">
+                    <td colspan="2">
+                        <button type="button" class="button btn btn-warning" onclick="addEnv(event)">Добавить</button>
+                    </td>
                 </tr>
                 <tr>
-                    <td></td>
-                    <td><input class="button" type="submit" value="Сохранить изменения"></td>
+                    <td colspan="2"><i class="error-message" th:text="${errorMessage}"></i></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input class="button btn btn-warning" type="submit" value="Сохранить изменения"></td>
                 </tr>
             </table>
             <input type="hidden" th:field="*{currentLaunch}" id="currentLaunch">
-            <input type="hidden" th:field="*{lastLaunch}" id="lastLaunch">
-            <input type="hidden" th:field="*{status}" id="status1">
             <input type="hidden" th:field="*{id}" id="id">
 
         </form>
@@ -81,6 +92,6 @@
         }
     }
 </script>
->
+
 </body>
 </html>

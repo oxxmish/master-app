@@ -1,13 +1,12 @@
 package ru.freemiumhosting.master.api;
 
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,48 +14,59 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.freemiumhosting.master.exception.DeployException;
+import ru.freemiumhosting.master.dto.ProjectDto;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
+import ru.freemiumhosting.master.service.impl.EnvService;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ProjectController {
-
     private final ProjectService projectService;
-
+    private final EnvService envService;
 
     @PostMapping("/api/createProject")
-    public String createProject(@ModelAttribute Project project) {
+    public String createProject(@ModelAttribute ProjectDto dto) {
         String errorMessage = null;
         try {
-            projectService.createProject(project);
-        } catch (DeployException deployException) {
+            projectService.createProject(dto);
+            //envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
+        } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
-        } catch (Exception e) {
-            log.error("Error executing request", e);
-            errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/deploy/?errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+            "redirect:/deploy/?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
+    @Transactional
     @PostMapping("/api/updateProject")
-    public String updateProject(@ModelAttribute Project project) {
+    public String updateProject(@ModelAttribute ProjectDto dto) {
         String errorMessage = null;
+        //var project = projectMapper.toEntity(dto); //TODO: need delete ALL previous envs and persist new ones
         try {
-            projectService.updateProject(project);
-        } catch (DeployException deployException) {
+            projectService.updateProject(dto);
+        } catch (Exception deployException) {
             log.error("Error executing request", deployException);
             errorMessage = deployException.getMessage();
+        }
+        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
+            "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
+    }
+
+    @GetMapping("/projects/updateDeploy/{projectId}")
+    public String updateDeploy(@PathVariable Long projectId) {
+        String errorMessage = null;
+        try {
+            Project project = projectService.findProjectById(projectId);
+            projectService.updateDeploy(project);
         } catch (Exception e) {
             log.error("Error executing request", e);
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects/errorMessage={1}", project.getId(), URLEncoder.encode(errorMessage));
+            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/projects/delete/{projectId}")
@@ -70,12 +80,12 @@ public class ProjectController {
             errorMessage = e.getMessage();
         }
         return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-                "redirect:/projects", projectId, URLEncoder.encode(errorMessage));
+            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
     }
 
     @GetMapping("/deploy")
     public String startDeploy(Model model, @RequestParam(required = false) String errorMessage) {
-        model.addAttribute("project", new Project());
+        model.addAttribute("project", new ProjectDto());
         if (!StringUtils.isEmpty(errorMessage)) {
             model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
         }
@@ -83,9 +93,12 @@ public class ProjectController {
     }
 
     @GetMapping("/projects")
-    public String getProjects(Model model) {
+    public String getProjects(Model model, @RequestParam(required = false) String errorMessage) {
         List<Project> projects = projectService.getAllProjects();
         model.addAttribute("projects", projects);
+        if (!StringUtils.isEmpty(errorMessage)) {
+            model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
+        }
         return "Projects";
     }
 
@@ -94,6 +107,8 @@ public class ProjectController {
                                  @RequestParam(required = false) String errorMessage) {
         Project project = projectService.findProjectById(projectId);
         model.addAttribute("project", project);
+        model.addAttribute("envs", envService.getEnvsByProject(project));
+
         if (!StringUtils.isEmpty(errorMessage)) {
             model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
         }

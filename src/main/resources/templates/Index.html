@@ -3,17 +3,30 @@
 <head>
     <meta charset="utf-8">
     <title>Freemium Hosting</title>
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+<!--    <link href="/css/bootstrap.min.css" rel="stylesheet">-->
+
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/about.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 </head>
 <body>
 <div th:insert ="header.html :: head"></div>
 
-<section class="container" type="main" id="Деплой">
-    <b>Start page</b>
-    <!-- TODO: create normal lending -->
+<section class="container" type="main" id="Home">
+    <nav>
+        <h1>
+            Сайт Freemium Hosting - надежный помощник в развертывании ваших проектов
+        </h1>
+        <hr>
+        <h2>
+            Сайт предоставляет услуги по развертыванию приложений на хостинг.
+        </h2>
+        <h2>
+            На данный момент платформа поддерживает проекты на языках Java и Python, а также упакованные в Docker.
+        </h2>
+<!--        <img src="/img/deploy-ico.png"/>-->
+    </nav>
 </section>
 <div th:insert ="footer.html :: foot"></div>
 <script src="/js/dynamicHeader.js">
