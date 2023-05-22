@@ -17,6 +17,7 @@ env:
   REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  DEPLOYS: 0
 
 
 jobs:
