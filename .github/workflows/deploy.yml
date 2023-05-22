@@ -89,7 +89,7 @@ jobs:
         # Deploy the Docker image to the cluster
       - name: Deploy to K8S
         run: |
-          export DEPLOYS=$(helm ls --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE} | awk '{print $1}' | grep -E -- "^$APP$" | wc -l)
+          export DEPLOYS=0
           export HELM_KEYS="${APP} ./.helm/charts/${APP} --set image.tag=${IMAGE_TAG} --kubeconfig ${KUBE_CONFIG_PATH}/${KUBE_CONF_FILE}"
           if [ ${DEPLOYS}  -eq 0 ];
                 then helm install $HELM_KEYS;
