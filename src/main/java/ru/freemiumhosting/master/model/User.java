@@ -21,12 +21,13 @@ public class User {
     @SequenceGenerator(name="users_generator", sequenceName = "users_seq", allocationSize=500)
     @Column(unique = true)
     private Integer id;
+
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "password")
+    private String password;
+
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private Set<Project> projects;
-
-    public User(Integer id, String username){
-        this.id =id;
-        this.username=username;
-    }
 }
