@@ -7,7 +7,7 @@ metadata:
     {{- include "freemium-hosting.labels" . | nindent 4 }}
 data:
   SERVER_PORT: {{ .Values.application.port | quote }}
-  DB_URL: {{ printf "jdbc:h2:file://%s/%s" .Values.db.persistence.mountPath .Values.db.name | quote }}
+  DB_URL: {{ .Values.db.dbUrl | quote }}
   #KUBECONFIG_PATH - from Deployment
   GIT_CLONE_TEMP_PATH: {{ .Values.project_build.git_clone_path | quote }}
   DOCKER_BUILD_WORKDIR: {{ .Values.project_build.docker_workdir | quote }}
