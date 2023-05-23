@@ -1,0 +1,31 @@
+---
+{{- if .Values.db.persistence.enabled}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.db.persistence.claimName }}
+  labels:
+    {{- include "freemium-hosting.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.db.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.db.persistence.size | quote }}
+{{- end }}
+---
+{{- if .Values.db.persistence.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.db.persistence.pvName }}
+  labels:
+    {{- include "freemium-hosting.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.db.persistence.accessMode | quote }}
+  capacity:
+    storage: {{ .Values.db.persistence.size | quote }}
+  hostPath:
+    path: {{ .Values.db.persistence.hostPath | quote }}
+{{- end }}
