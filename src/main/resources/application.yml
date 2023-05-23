@@ -38,10 +38,10 @@ spring:
   mvc:
     static-path-pattern: /**
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./testdb}
-    username: ${DB_USERNAME:user}
-    password: ${DB_PASS:12345}
-    driver-class-name: org.h2.Driver
+    url: ${DB_URL:jdbc:postgresql://193.107.239.183:32592/postgresDb}
+    username: ${DB_USERNAME:postgresUser}
+    password: ${DB_PASS:postgresPassword}
+    driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: false #true
