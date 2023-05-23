@@ -80,15 +80,7 @@ db:
   secretName: freemium-hosting-db-secret
   userField: userName
   passwordField: password
-  persistence:
-    enabled: true
-    claimName: db-pvc
-    pvName: db-pv
-    storageClass: local-storage
-    accessMode: ReadWriteOnce
-    size: 15M
-    hostPath: "/mnt/data"
-    mountPath: "/opt/data/"
+  dbUrl: jdbc:postgresql://10.233.32.168:5432/postgresDb
 
 project_build:
   git_clone_path: ./tmp/git-clone
