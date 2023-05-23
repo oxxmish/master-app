@@ -1,4 +1,4 @@
-package ru.freemiumhosting.master.dto;
+package ru.freemiumhosting.master.model.dto;
 
 import java.util.List;
 import java.util.Map;

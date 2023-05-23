@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 
-import ru.freemiumhosting.master.exception.GitCloneException;
+import ru.freemiumhosting.master.utils.exception.GitCloneException;
 
 @Slf4j
 @Service

@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.freemiumhosting.master.api.ProjectController;
-import ru.freemiumhosting.master.dto.ProjectDto;
-import ru.freemiumhosting.master.model.Project;
+import ru.freemiumhosting.master.model.dto.ProjectDto;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

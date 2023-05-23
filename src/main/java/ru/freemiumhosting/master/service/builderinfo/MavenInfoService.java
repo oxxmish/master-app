@@ -5,10 +5,8 @@ import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
-import ru.freemiumhosting.master.exception.InvalidProjectException;
+import ru.freemiumhosting.master.utils.exception.InvalidProjectException;
 import ru.freemiumhosting.master.model.maven.PomXmlStructure;
-
-import java.io.File;
 
 @Service
 @RequiredArgsConstructor

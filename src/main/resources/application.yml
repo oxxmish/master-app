@@ -32,11 +32,6 @@ management:
 
 
 spring:
-  h2:
-    console:
-      enabled: true
-  mvc:
-    static-path-pattern: /**
   datasource:
     url: ${DB_URL:jdbc:postgresql://193.107.239.183:32592/postgresDb}
     username: ${DB_USERNAME:postgresUser}

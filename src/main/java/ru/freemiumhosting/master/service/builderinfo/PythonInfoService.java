@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.freemiumhosting.master.exception.InvalidProjectException;
+import ru.freemiumhosting.master.utils.exception.InvalidProjectException;
 
 @Service
 public class PythonInfoService implements BuilderInfoService {

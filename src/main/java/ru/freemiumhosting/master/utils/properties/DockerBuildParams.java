@@ -1,4 +1,4 @@
-package ru.freemiumhosting.master.properties;
+package ru.freemiumhosting.master.utils.properties;
 
 import lombok.Data;
 import org.springframework.util.StringUtils;

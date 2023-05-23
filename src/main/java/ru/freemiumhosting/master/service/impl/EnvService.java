@@ -4,16 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Service;
-import ru.freemiumhosting.master.exception.GitCloneException;
 import ru.freemiumhosting.master.model.Env;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.repository.EnvRep;
-import ru.freemiumhosting.master.repository.ProjectRep;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

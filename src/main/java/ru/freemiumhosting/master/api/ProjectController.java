@@ -5,22 +5,17 @@ import java.text.MessageFormat;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import ru.freemiumhosting.master.dto.ProjectDto;
+import org.springframework.web.bind.annotation.*;
+import ru.freemiumhosting.master.model.dto.ProjectDto;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
 import ru.freemiumhosting.master.service.impl.EnvService;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;

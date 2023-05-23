@@ -2,9 +2,9 @@ package ru.freemiumhosting.master.service;
 
 import java.util.List;
 
-import ru.freemiumhosting.master.dto.ProjectDto;
-import ru.freemiumhosting.master.exception.DeployException;
-import ru.freemiumhosting.master.exception.KuberException;
+import ru.freemiumhosting.master.model.dto.ProjectDto;
+import ru.freemiumhosting.master.utils.exception.DeployException;
+import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 
 public interface ProjectService {

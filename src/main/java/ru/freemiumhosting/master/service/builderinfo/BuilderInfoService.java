@@ -1,6 +1,6 @@
 package ru.freemiumhosting.master.service.builderinfo;
 
-import ru.freemiumhosting.master.exception.InvalidProjectException;
+import ru.freemiumhosting.master.utils.exception.InvalidProjectException;
 
 public interface BuilderInfoService {
     /**

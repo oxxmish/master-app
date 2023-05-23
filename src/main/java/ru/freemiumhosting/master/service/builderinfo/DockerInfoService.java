@@ -2,8 +2,7 @@ package ru.freemiumhosting.master.service.builderinfo;
 
 import java.nio.file.Path;
 import org.springframework.stereotype.Component;
-import ru.freemiumhosting.master.exception.DeployException;
-import ru.freemiumhosting.master.exception.InvalidProjectException;
+import ru.freemiumhosting.master.utils.exception.InvalidProjectException;
 
 @Component
 public class DockerInfoService implements BuilderInfoService {

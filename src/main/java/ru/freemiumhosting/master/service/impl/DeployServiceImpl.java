@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import ru.freemiumhosting.master.exception.DeployException;
+import ru.freemiumhosting.master.utils.exception.DeployException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;

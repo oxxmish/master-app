@@ -6,7 +6,6 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.freemiumhosting.master.exception.KuberException;
+import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;

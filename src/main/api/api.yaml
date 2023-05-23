@@ -563,6 +563,11 @@ components:
         name:
           type: string
           example: "user1"
+        userRole:
+          type: string
+          enum:
+            - USER
+            - ADMIN
         createdDate:
           type: string
           format: date-time
