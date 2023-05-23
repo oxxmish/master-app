@@ -73,9 +73,6 @@ spec:
             timeoutSeconds: 60
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - name: {{ .Values.db.persistence.claimName }}
-              mountPath: {{ .Values.db.persistence.mountPath }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -88,7 +85,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: {{ .Values.db.persistence.claimName }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.db.persistence.claimName }}
