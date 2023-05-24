@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.freemiumhosting.master.utils.exception.DeployException;
 import ru.freemiumhosting.master.model.Project;
-import ru.freemiumhosting.master.service.ProjectService;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

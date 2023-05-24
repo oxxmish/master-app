@@ -1,5 +1,6 @@
 package ru.freemiumhosting.master.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import ru.freemiumhosting.master.utils.enums.UserRole;
@@ -11,7 +12,8 @@ import java.time.OffsetDateTime;
 public class UserDto {
     private Long id;
     private String name;
-    private OffsetDateTime createdDate;
+    private String password;
+    private String createdDate;
     private UserRole userRole;
     private Long currentCpu;
     private Long requestCpu;

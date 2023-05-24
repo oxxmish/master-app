@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
+import ru.freemiumhosting.master.utils.converters.ListStringConverter;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 import static javax.persistence.CascadeType.*;
@@ -20,34 +22,48 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projects_generator")
     @SequenceGenerator(name = "projects_generator", sequenceName = "projects_seq", allocationSize = 500)
     private Long id;
+    @Column(name = "name")
     private String name;
-    private String link;
+    @Column(name = "description")
+    private String description;
+    @Column(name = "type")
+    private String type;
+    @Column(name = "git_url")
+    private String gitUrl;
+    @Column(name = "git_branch")
+    private String gitBranch;
+    @Column(name = "app_link")
     private String appLink;
-    private String branch;
+    @Column(name = "commit_hash")
     private String commitHash;
-    private ProjectStatus status = ProjectStatus.UNDEFINED;//TODO change to enum
-    private String language;
-    private String executableName;
+    @Column(name = "status")
+    private ProjectStatus status = ProjectStatus.CREATED;
+    @Column(name = "owner_id")
+    private Long ownerId;
+    @Column(name = "owner_name")
+    private String ownerName;
+    @Column(name = "cpu_request")
+    private Double cpuRequest;
+    @Column(name = "ram_consumption")
+    private Double ramConsumption;
+    @Column(name = "ram_request")
+    private Double ramRequest;
+    @Column(name = "storage_consumption")
+    private Double storageConsumption;
+    @Column(name = "storage_request")
+    private Double storageRequest;
+    @Column(name = "registry_destination")
     private String registryDestination;
-    private String lastLaunch = "true";
-    private String currentLaunch = "true";
+    @Column(name = "kubernetes_name")
     private String kubernetesName;
+    @Column(name = "node_port")
     private Integer nodePort;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Convert(converter = ListStringConverter.class)
+    private List<String> envs;
 
-    @OneToMany(mappedBy = "project",cascade =ALL, orphanRemoval = false)
-    private Set<Env> envs;
-
-    public Boolean userStartsDeploy() {
-        return lastLaunch.equals("false") && currentLaunch.equals("true");
-    }
-
-    public Boolean userFinishesDeploy() {
-        return lastLaunch.equals("true") && currentLaunch.equals("false");
-    }
+    @Convert(converter = ListStringConverter.class)
+    private List<String> ports;
 
     public void generateAppLink(String domain){this.appLink= "http://" +domain+":"+this.nodePort;}
 }

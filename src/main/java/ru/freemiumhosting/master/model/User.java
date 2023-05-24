@@ -40,7 +40,7 @@ public class User {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @Column(name = "name")
+  @Column(name = "name", unique = true)
   private String name;
 
   @Column(name = "password")

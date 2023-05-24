@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
@@ -133,7 +135,7 @@ public class KubernetesService {
             createNamespaceIfDontExist(client, project);
             createService(client, project);
             createDeployment(client, project);
-            project.setStatus(ProjectStatus.RUNNING);
+            project.setStatus(ProjectStatus.ACTIVE);
             projectRep.save(project);
         } catch (Exception e) {
             project.setStatus(ProjectStatus.ERROR);
@@ -167,4 +169,25 @@ public class KubernetesService {
         }
     }
 
+    @Async
+    @SneakyThrows
+    public void startProject(Project project) {
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        projectRep.save(project);
+        //TODO replicas = 1
+        Thread.sleep(3000);
+        project.setStatus(ProjectStatus.ACTIVE);
+        projectRep.save(project);
+    }
+
+    @Async
+    @SneakyThrows
+    public void stopProject(Project project) {
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        projectRep.save(project);
+        //TODO replicas = 0
+        Thread.sleep(3000);
+        project.setStatus(ProjectStatus.STOPPED);
+        projectRep.save(project);
+    }
 }

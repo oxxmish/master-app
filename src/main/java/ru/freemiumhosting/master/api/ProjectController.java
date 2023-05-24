@@ -1,118 +1,74 @@
 package ru.freemiumhosting.master.api;
 
-import java.net.URLEncoder;
-import java.text.MessageFormat;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import ru.freemiumhosting.master.model.dto.AdminViewDto;
+import ru.freemiumhosting.master.model.dto.LogsDto;
 import ru.freemiumhosting.master.model.dto.ProjectDto;
-import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.service.ProjectService;
 import ru.freemiumhosting.master.service.impl.EnvService;
+import ru.freemiumhosting.master.utils.exception.DeployException;
+import ru.freemiumhosting.master.utils.exception.KuberException;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/projects")
 public class ProjectController {
     private final ProjectService projectService;
-    private final EnvService envService;
 
-    @PostMapping("/api/createProject")
-    public String createProject(@ModelAttribute ProjectDto dto) {
-        String errorMessage = null;
-        try {
-            projectService.createProject(dto);
-            //envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
-        } catch (Exception deployException) {
-            log.error("Error executing request", deployException);
-            errorMessage = deployException.getMessage();
-        }
-        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/deploy/?errorMessage={0}", URLEncoder.encode(errorMessage));
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ProjectDto> getUsersProjects() {
+       return projectService.getUsersProjects();
     }
 
-    @Transactional
-    @PostMapping("/api/updateProject")
-    public String updateProject(@ModelAttribute ProjectDto dto) {
-        String errorMessage = null;
-        //var project = projectMapper.toEntity(dto); //TODO: need delete ALL previous envs and persist new ones
-        try {
-            projectService.updateProject(dto);
-        } catch (Exception deployException) {
-            log.error("Error executing request", deployException);
-            errorMessage = deployException.getMessage();
-        }
-        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/deploy/?errorMessage={1}", dto.getId(), URLEncoder.encode(errorMessage));
+    @GetMapping(value = "/adminView", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AdminViewDto getAdminsProjects() {
+       return projectService.getAdminView();
     }
 
-    @GetMapping("/projects/updateDeploy/{projectId}")
-    public String updateDeploy(@PathVariable Long projectId) {
-        String errorMessage = null;
-        try {
-            Project project = projectService.findProjectById(projectId);
-            projectService.updateDeploy(project);
-        } catch (Exception e) {
-            log.error("Error executing request", e);
-            errorMessage = e.getMessage();
-        }
-        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
+    @GetMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProjectDto getParticularProject(@PathVariable Long id) {
+        return projectService.getProjectById(id);
     }
 
-    @GetMapping("/projects/delete/{projectId}")
-    public String deleteProject(@PathVariable Long projectId) {
-        String errorMessage = null;
-        try {
-            Project project = projectService.findProjectById(projectId);
-            projectService.deleteProject(project);
-        } catch (Exception e) {
-            log.error("Error executing request", e);
-            errorMessage = e.getMessage();
-        }
-        return errorMessage == null ? "redirect:/projects" : MessageFormat.format(
-            "redirect:/projects?errorMessage={0}", URLEncoder.encode(errorMessage));
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProjectDto createProject(@RequestBody ProjectDto dto) throws DeployException {
+        return projectService.createProject(dto);
+        //envService.createEnvs(dto.getEnvNames(),dto.getEnvValues(),project);
     }
 
-    @GetMapping("/deploy")
-    public String startDeploy(Model model, @RequestParam(required = false) String errorMessage) {
-        model.addAttribute("project", new ProjectDto());
-        if (!StringUtils.isEmpty(errorMessage)) {
-            model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
-        }
-        return "Deploy";
+    @PutMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProjectDto updateProject(@RequestBody ProjectDto dto, @PathVariable Long id) throws DeployException {
+        dto.setId(id);
+        return projectService.updateProject(dto);
     }
 
-    @GetMapping("/projects")
-    public String getProjects(Model model, @RequestParam(required = false) String errorMessage) {
-        List<Project> projects = projectService.getAllProjects();
-        model.addAttribute("projects", projects);
-        if (!StringUtils.isEmpty(errorMessage)) {
-            model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
-        }
-        return "Projects";
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteProject(@PathVariable Long id) throws KuberException {
+        projectService.deleteProject(id);
     }
 
-    @GetMapping("/projects/{projectId}")
-    public String getProjectById(Model model, @PathVariable Long projectId,
-                                 @RequestParam(required = false) String errorMessage) {
-        Project project = projectService.findProjectById(projectId);
-        model.addAttribute("project", project);
-        model.addAttribute("envs", envService.getEnvsByProject(project));
-
-        if (!StringUtils.isEmpty(errorMessage)) {
-            model.addAttribute("errorMessage", "*Ошибка: " + errorMessage);
-        }
-        return "Project";
+    @PostMapping(value = "/{id}/rebuild", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void rebuildProject(@PathVariable Long id) {
+        projectService.rebuildProject(id);
     }
 
+    @PostMapping(value = "/{id}/start", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void startProject(@PathVariable Long id) {
+        projectService.startProject(id);
+    }
 
-    @GetMapping("/")
-    public String index(Model model) {
-        return "Index";
+    @PostMapping(value = "/{id}/stop", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void stopProject(@PathVariable Long id) {
+        projectService.stopProject(id);
+    }
+
+    @GetMapping(value = "/{id}/logs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public LogsDto getLogs(@PathVariable Long id) {
+       return projectService.getLogs(id);
     }
 }

@@ -5,7 +5,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import ru.freemiumhosting.master.model.User;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRep extends JpaRepository<User,Long> {
-    User findByNameIgnoreCase(@NonNull String name);
+    Optional<User> findByNameIgnoreCase(@NonNull String name);
 }

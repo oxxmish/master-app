@@ -1,5 +1,6 @@
 package ru.freemiumhosting.master.model.dto;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,20 +14,20 @@ import ru.freemiumhosting.master.model.ProjectStatus;
 public class ProjectDto {
     private Long id;
     private String name;
-    private String link;
-    private String branch;
-    private ProjectStatus status = ProjectStatus.UNDEFINED;
-    private String language;
-    private String lastLaunch = "true";
-    private String currentLaunch = "true";
-    private List<String> envNames;
-    private List<String> envValues;
-
-    public Map<String, String> getEnvs() {
-        return IntStream
-            .range(0, envNames.size())
-            .mapToObj(i -> Pair.of(envNames.get(i), envValues.get(i)))
-            .filter(p -> !StringUtils.isEmpty(p.getKey()))
-            .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-    }
+    private String description;
+    private String type;
+    private String gitUrl;
+    private String gitBranch;
+    private ProjectStatus status;
+    private Long ownerId;
+    private String ownerName;
+    private List<String> ports;
+    private List<String> envs;
+    private String createdDate;
+    private Double cpuConsumption;
+    private Double cpuRequest;
+    private Double ramConsumption;
+    private Double ramRequest;
+    private Double storageConsumption;
+    private Double storageRequest;
 }
