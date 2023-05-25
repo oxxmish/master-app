@@ -3,6 +3,7 @@ package ru.freemiumhosting.master.utils.mappers;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import ru.freemiumhosting.master.model.dto.EditUserDto;
 import ru.freemiumhosting.master.model.dto.UserDto;
 import ru.freemiumhosting.master.model.User;
 
@@ -16,4 +17,7 @@ public interface UserMapper {
     UserDto userToUserDto(User user);
     @Mapping(target = "createdDate", ignore = true)
     User userDtoToUser(UserDto userDto);
+    User editUserDtoToUser(EditUserDto userDto);
+
+
 }
