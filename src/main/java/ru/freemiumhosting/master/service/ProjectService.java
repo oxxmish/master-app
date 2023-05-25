@@ -78,7 +78,7 @@ public class ProjectService {
     }
 
     public List<ProjectDto> getUsersProjects() {
-        SecurityUser currentUser =  (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SecurityUser currentUser =  SecurityUser.getCurrentUser();
         List<Project> userProjects = projectRep.findByOwnerName(currentUser.getUsername());
         return userProjects.stream().map(projectMapper::projectToProjectDto).collect(Collectors.toList());
     }
@@ -87,6 +87,8 @@ public class ProjectService {
     @Transactional
     public ProjectDto createProject(ProjectDto projectDto) throws DeployException {
         Project project = projectMapper.projectDtoToProject(projectDto);
+        setUsersInfo(project);
+        checkNameOfProject(project);
         projectRep.save(project);
         //TODO build docker image
         Thread.sleep(3000);
@@ -94,11 +96,25 @@ public class ProjectService {
         return projectMapper.projectToProjectDto(project);
     }
 
+    private void checkNameOfProject(Project project) {
+        long check = projectRep.countByNameIgnoreCaseAndOwnerId(project.getName(), project.getOwnerId());
+        if (check > 1) {
+            throw new IllegalStateException("Проект с таким именем у пользователя существует");
+        }
+    }
+
+    private void setUsersInfo(Project project) {
+        SecurityUser currentUser = SecurityUser.getCurrentUser();
+        project.setOwnerId(currentUser.getUserId());
+        project.setOwnerName(currentUser.getUsername());
+    }
+
     @Transactional
     public ProjectDto updateProject(ProjectDto projectDto) throws DeployException {
-
         checkProjectExistenceOrThrow(projectDto.getId());
         Project editedProject = projectMapper.projectDtoToProject(projectDto);
+        setUsersInfo(editedProject);
+        checkNameOfProject(editedProject);
         //TODO redeploy project
         projectRep.save(editedProject);
         return projectMapper.projectToProjectDto(editedProject);
@@ -134,7 +150,7 @@ public class ProjectService {
         Project project = checkProjectExistenceOrThrow(id);
         if (!(project.getStatus() == ProjectStatus.ACTIVE))
             throw new InvalidProjectException("Стоп проекта можно осуществить только из статуса ACTIVE");
-        kubernetesService.startProject(project);
+        kubernetesService.stopProject(project);
     }
 
     public AdminViewDto getAdminView() {

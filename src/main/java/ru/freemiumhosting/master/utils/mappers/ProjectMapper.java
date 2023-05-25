@@ -15,5 +15,7 @@ public interface ProjectMapper {
 
     ProjectDto projectToProjectDto(Project project);
 
+    @Mapping(target = "ownerId", ignore = true)
+    @Mapping(target = "ownerName", ignore = true)
     Project projectDtoToProject(ProjectDto projectDto);
 }

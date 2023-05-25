@@ -16,11 +16,11 @@ import static javax.persistence.CascadeType.*;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "Project")
+@Table(name = "Project", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner_id"}))
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projects_generator")
-    @SequenceGenerator(name = "projects_generator", sequenceName = "projects_seq", allocationSize = 500)
+    @SequenceGenerator(name = "projects_generator", sequenceName = "projects_seq", allocationSize = 1)
     private Long id;
     @Column(name = "name")
     private String name;

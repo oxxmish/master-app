@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface ProjectRep extends JpaRepository<Project,Long> {
+    long countByNameIgnoreCaseAndOwnerId(String name, Long ownerId);
     List<Project> findByOwnerName(@NonNull String name);
     Boolean existsByNodePort(Integer nodePort);
 

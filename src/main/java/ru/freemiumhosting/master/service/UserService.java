@@ -27,8 +27,8 @@ public class UserService {
     }
 
     public void createUser(UserDto userDto) {
-        checkUniqueName(userDto.getName());
         User user = userMapper.userDtoToUser(userDto);
+        checkUniqueName(userDto.getName(), user.getName());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setUserRole(UserRole.USER);
         userRep.save(user);
@@ -44,8 +44,8 @@ public class UserService {
 
     public UserDto editUser(EditUserDto userDto) {
         checkUserWithIdExist(userDto.getId());
-        checkUniqueName(userDto.getName());
         User user = userMapper.editUserDtoToUser(userDto);
+        checkUniqueName(userDto.getName(), user.getName());
         userRep.save(user);
         return userMapper.userToUserDto(user);
     }
@@ -63,7 +63,8 @@ public class UserService {
         ;
     }
 
-    private void checkUniqueName(String name) {
+    private void checkUniqueName(String name, String oldName) {
+        if (name.equals(oldName)) return;
         if (userRep.findByNameIgnoreCase(name).isPresent()) {
             throw new IllegalStateException(String.format("Пользователь с именем %s занят", name));
         }
