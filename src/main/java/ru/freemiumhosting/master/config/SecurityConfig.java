@@ -33,6 +33,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable().cors().disable()
                 .authorizeHttpRequests((requests) -> requests
+                        .antMatchers("/management/health/liveness").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
