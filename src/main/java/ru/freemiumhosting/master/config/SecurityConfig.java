@@ -34,6 +34,7 @@ public class SecurityConfig {
         http.csrf().disable().cors().disable()
                 .authorizeHttpRequests((requests) -> requests
                         .antMatchers("/management/health/liveness").permitAll()
+                        .antMatchers("/management/health/readiness").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
