@@ -38,7 +38,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
-                        .loginPage("/auth")
+                        .loginPage("/authorize")
                         .permitAll()
                         .successForwardUrl("/auth-data")
                 )
