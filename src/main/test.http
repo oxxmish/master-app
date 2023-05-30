@@ -1,0 +1,26 @@
+###
+
+# curl --location 'localhost:8080/authorize'
+#--header 'Cookie: JSESSIONID=64CE795E33EA1C757099BAAB40C6B90D'
+#--form 'username="user2"'
+#--form 'password="qwe123"'
+POST localhost:8080/authorize
+Cookie: JSESSIONID=64CE795E33EA1C757099BAAB40C6B90D
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="username"
+
+"user2"
+--WebAppBoundary
+Content-Disposition: form-data; name="password"
+
+"qwe123"
+--WebAppBoundary--
+
+###
+
+
+
+###
+
