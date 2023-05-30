@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,8 @@ import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
+
+import static io.fabric8.kubernetes.client.utils.internal.PodOperationUtil.getLog;
 
 @Slf4j
 @Service
@@ -70,8 +73,17 @@ public class KubernetesService {
                 .endSpec()
                 .build();
 
+
         Pod pod = kubernetesClient.pods().inNamespace("default").resource(kanikoPod).create();
-        Logs logs = new Logs(project.getId(), kubernetesClient.pods().resource(pod).getLog(true));
+
+        //wait for finish or error
+        kubernetesClient.pods().inNamespace("default")
+                .withName(String.format("kaniko-%s", project.getCommitHash()))
+                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 1, TimeUnit.MINUTES);
+
+        String logMessage = kubernetesClient.pods().inNamespace("default").withName(String.format("kaniko-%s", project.getCommitHash())).getLog(true);
+        Logs logs = new Logs(project.getId(), logMessage);
+        logsRepository.save(logs);
 
     }
 
