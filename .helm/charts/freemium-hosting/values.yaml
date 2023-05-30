@@ -74,6 +74,16 @@ affinity: {}
 
 application:
   port: 8080
+  build:
+    persistence:
+      enabled: true
+      claimName: build-pv-claim
+      pvName: build-pv-volume
+      storageClass: manual
+      accessMode: ReadWriteMany
+      size: 5Gi
+      hostPath: "/build"
+      mountPath: "/build"
 
 db:
   name: freemium-hosting-db
