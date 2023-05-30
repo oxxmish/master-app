@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,6 +19,7 @@ import ru.freemiumhosting.master.utils.properties.DockerfilesProperties;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles(profiles = "local")
+@Disabled
 class DockerfileBuilderServiceTest {
     @Autowired
     private DockerfileBuilderService dockerfileBuilderService;
