@@ -93,8 +93,8 @@ db:
   dbUrl: jdbc:postgresql://10.233.32.168:5432/postgresDb
 
 project_build:
-  git_clone_path: ./tmp/git-clone
-  docker_workdir: /usr/src/app/backend
+  git_clone_path: /build
+  docker_workdir: /build
 
 images:
   java:

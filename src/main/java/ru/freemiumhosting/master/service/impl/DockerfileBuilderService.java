@@ -41,6 +41,6 @@ public class DockerfileBuilderService {
     @SneakyThrows
     private static String getDockerFileTemplate(String language) {
         return new String(DockerfilesProperties.class.getResourceAsStream(MessageFormat.format(
-            "/dockerfiles/{0}.Dockerfile", language)).readAllBytes()); //TODO: cache
+            "/dockerfiles/{0}.Dockerfile", language.toLowerCase())).readAllBytes()); //TODO: cache
     }
 }

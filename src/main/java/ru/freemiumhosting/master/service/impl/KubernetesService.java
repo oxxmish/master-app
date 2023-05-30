@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.model.Logs;
+import ru.freemiumhosting.master.repository.LogsRepository;
 import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
@@ -29,19 +31,57 @@ import ru.freemiumhosting.master.repository.ProjectRep;
 public class KubernetesService {
     private final ProjectRep projectRep;
     private final EnvService envService;
-
-    @Value("${freemium.hosting.kubeconfig}")
-    private String kubeConfigPath;
-
+    private final KubernetesClient kubernetesClient;
+    private final LogsRepository logsRepository;
+    @Value("${freemium.hosting.git-clone-path}")
+    String clonePath;
     @Value("${freemium.hosting.containerPort}")
     private Integer containerPort;
 
     @Value("user1")
     private String namespace;
 
-    public KubernetesClient createKubernetesApiClient() {
-        System.setProperty("kubeconfig", kubeConfigPath);
-        return new KubernetesClientBuilder().build();
+    public void createKanikoPod(Project project) {
+        String[] kanikoArgs = createKanikoArgs(project);
+
+        Pod kanikoPod = new PodBuilder().withNewMetadata()
+                .withName(String.format("kaniko-%s", project.getCommitHash()))
+                .endMetadata()
+                .withNewSpec()
+                .withVolumes(
+                        new VolumeBuilder().withName("build-pv-storage")
+                                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder().withClaimName("build-pv-claim").build()).build(),
+                        new VolumeBuilder().withName("kaniko-secret")
+                                .withSecret(new SecretVolumeSourceBuilder().withSecretName("regcred")
+                                        .withItems(new KeyToPathBuilder().withKey(".dockerconfigjson").withPath("config.json").build()
+                                        ).build()
+                                ).build()
+                )
+                .withRestartPolicy("Never")
+                .addNewContainer()
+                .withName(String.format("kaniko-%s", project.getCommitHash()))
+                .withImage("gcr.io/kaniko-project/executor:debug")
+                .withArgs(kanikoArgs)
+                .withVolumeMounts(
+                        new VolumeMountBuilder().withName("kaniko-secret").withMountPath("/kaniko/.docker").build(),
+                        new VolumeMountBuilder().withName("build-pv-storage").withMountPath("/build").build()
+                )
+                .endContainer()
+                .endSpec()
+                .build();
+
+        Pod pod = kubernetesClient.pods().inNamespace("default").resource(kanikoPod).create();
+        Logs logs = new Logs(project.getId(), kubernetesClient.pods().resource(pod).getLog(true));
+
+    }
+
+    private String[] createKanikoArgs(Project project) {
+        return new String[] {
+            "--dockerfile=Dockerfile",
+            String.format("--context=dir://%s/%s/%s", clonePath, project.getOwnerName(), project.getName()),
+            String.format("--destination=freemiumhosting/%s-%s:%s", project.getOwnerName(), project.getName(), project.getCommitHash()),
+            "--verbosity=debug"
+        };
     }
 
     public void createDeployment(KubernetesClient client, Project project) {
@@ -128,46 +168,46 @@ public class KubernetesService {
         }
     }
 
-    public void createKubernetesObjects(Project project) throws KuberException {
-        try {
-            log.info("Generate kuber objects for project {}", project.getName());
-            KubernetesClient client = createKubernetesApiClient();
-            createNamespaceIfDontExist(client, project);
-            createService(client, project);
-            createDeployment(client, project);
-            project.setStatus(ProjectStatus.ACTIVE);
-            projectRep.save(project);
-        } catch (Exception e) {
-            project.setStatus(ProjectStatus.ERROR);
-            projectRep.save(project);
-            log.error("При деплое проекта произошла ошибка", e);
-            throw new KuberException("При деплое проекта произошла ошибка");
-        }
-    }
-
-    public void deleteKubernetesObjects(Project project) throws KuberException {
-        try {
-            KubernetesClient client = createKubernetesApiClient();
-            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
-            client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
-        } catch (Exception e) {
+//    public void createKubernetesObjects(Project project) throws KuberException {
+//        try {
+//            log.info("Generate kuber objects for project {}", project.getName());
+//            KubernetesClient client = createKubernetesApiClient();
+//            createNamespaceIfDontExist(client, project);
+//            createService(client, project);
+//            createDeployment(client, project);
+//            project.setStatus(ProjectStatus.ACTIVE);
+//            projectRep.save(project);
+//        } catch (Exception e) {
 //            project.setStatus(ProjectStatus.ERROR);
-            log.error("При удалении проекта произошла ошибка", e);
-//            throw new KuberException("При удалении проекта произошла ошибка");
-        }
-    }
+//            projectRep.save(project);
+//            log.error("При деплое проекта произошла ошибка", e);
+//            throw new KuberException("При деплое проекта произошла ошибка");
+//        }
+//    }
 
-    public void setDeploymentReplicas(Project project, Integer replicasNumber)
-            throws KuberException {
-        try {
-            KubernetesClient client = createKubernetesApiClient();
-            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);
-        } catch (Exception e) {
-            project.setStatus(ProjectStatus.ERROR);
-            log.error("При изменении проекта произошла ошибка", e);
-            throw new KuberException("При изменении проекта произошла ошибка");
-        }
-    }
+//    public void deleteKubernetesObjects(Project project) throws KuberException {
+//        try {
+//            KubernetesClient client = createKubernetesApiClient();
+//            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).delete();
+//            client.services().inNamespace(namespace).withName(project.getKubernetesName()).delete();
+//        } catch (Exception e) {
+////            project.setStatus(ProjectStatus.ERROR);
+//            log.error("При удалении проекта произошла ошибка", e);
+////            throw new KuberException("При удалении проекта произошла ошибка");
+//        }
+//    }
+
+//    public void setDeploymentReplicas(Project project, Integer replicasNumber)
+//            throws KuberException {
+//        try {
+//            KubernetesClient client = createKubernetesApiClient();
+//            client.apps().deployments().inNamespace(namespace).withName(project.getKubernetesName()).scale(replicasNumber);
+//        } catch (Exception e) {
+//            project.setStatus(ProjectStatus.ERROR);
+//            log.error("При изменении проекта произошла ошибка", e);
+//            throw new KuberException("При изменении проекта произошла ошибка");
+//        }
+//    }
 
     @Async
     @SneakyThrows

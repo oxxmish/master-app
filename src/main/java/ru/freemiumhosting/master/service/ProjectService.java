@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import java.util.*;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,43 +35,17 @@ import javax.transaction.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
 
-    private final String clonePath;
-    private final String domainName;
-    private final GitService gitService;
-    private final EnvService envService;
+    @Value("${freemium.hosting.git-clone-path}")
+    private String clonePath;
+    @Value("${freemium.hosting.domain-name}")
+    private String domainName;
     private final KubernetesService kubernetesService;
-    private final DockerfileBuilderService dockerfileBuilderService;
-    // key - language, value - BuilderInfoService
-    private final Map<String, BuilderInfoService> builderInfoServices;
-    private final DockerImageBuilderService dockerImageBuilderService;
-    private final CleanerService cleanerService;
     private final DeployService deployService;
     private final ProjectRep projectRep;
     private final ProjectMapper projectMapper = ProjectMapper.INSTANCE;
-
-
-    public ProjectService(@Value("${freemium.hosting.git-clone-path}") String clonePath,
-                              GitService gitService, EnvService envService,
-                              @Value("${freemium.hosting.domain-name}") String domainName,
-                              KubernetesService kubernetesService, DockerfileBuilderService dockerfileBuilderService,
-                              Collection<BuilderInfoService> builderInfoServices,
-                              DockerImageBuilderService dockerImageBuilderService,
-                              CleanerService cleanerService, DeployService deployService, ProjectRep projectRep) {
-        this.clonePath = clonePath;
-        this.domainName=domainName;
-        this.gitService = gitService;
-        this.envService = envService;
-        this.kubernetesService = kubernetesService;
-        this.dockerfileBuilderService = dockerfileBuilderService;
-        this.dockerImageBuilderService = dockerImageBuilderService;
-        this.builderInfoServices = builderInfoServices.stream().collect(Collectors.toMap(builderInfoService ->
-                builderInfoService.supportedLanguage().toLowerCase(Locale.ROOT), s -> s));
-        this.cleanerService = cleanerService;
-        this.deployService = deployService;
-        this.projectRep = projectRep;
-    }
 
     public ProjectDto getProjectById(Long projectId) {
         Project project = projectRep.findByIdAndOwnerId(projectId, SecurityUser.getCurrentUser().getUserId())
@@ -93,6 +68,7 @@ public class ProjectService {
         setDefaultRequests(project);
         projectRep.save(project);
         //TODO build docker image
+
         Thread.sleep(3000);
         //TODO start deploy
         return projectMapper.projectToProjectDto(project);

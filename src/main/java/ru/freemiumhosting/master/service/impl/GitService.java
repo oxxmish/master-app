@@ -8,17 +8,18 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import ru.freemiumhosting.master.utils.exception.GitCloneException;
 
 @Slf4j
 @Service
 public class GitService {
-    public @NonNull String cloneGitRepo(String gitClonePath, String uri, String branch)
+    public @NonNull String cloneGitRepo(File gitClonePath, String uri, String branch)
         throws GitCloneException {
         try (Git git = Git.cloneRepository()
             .setURI(uri)
-            .setDirectory(new File(gitClonePath))
+            .setDirectory(gitClonePath)
             .setBranch(branch)
             .call()
         ) {
