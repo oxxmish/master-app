@@ -7,6 +7,7 @@ import lombok.Value;
 import ru.freemiumhosting.master.utils.converters.ListStringConverter;
 
 import javax.persistence.*;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -42,8 +43,12 @@ public class Project {
     private Long ownerId;
     @Column(name = "owner_name")
     private String ownerName;
+    @Column(name = "created_date")
+    private OffsetDateTime createdDate;
     @Column(name = "cpu_request")
     private Double cpuRequest;
+    @Column(name = "cpu_consumption")
+    private Double cpuConsumption;
     @Column(name = "ram_consumption")
     private Double ramConsumption;
     @Column(name = "ram_request")

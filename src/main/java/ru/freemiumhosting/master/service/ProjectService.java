@@ -1,6 +1,7 @@
 package ru.freemiumhosting.master.service;
 
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -87,8 +88,9 @@ public class ProjectService {
     @Transactional
     public ProjectDto createProject(ProjectDto projectDto) throws DeployException {
         Project project = projectMapper.projectDtoToProject(projectDto);
+        project.setCreatedDate(OffsetDateTime.now());
         setUsersInfo(project);
-        checkNameOfProject(project);
+        setDefaultRequests(project);
         projectRep.save(project);
         //TODO build docker image
         Thread.sleep(3000);
@@ -96,9 +98,15 @@ public class ProjectService {
         return projectMapper.projectToProjectDto(project);
     }
 
+    private void setDefaultRequests(Project project) {
+        project.setCpuRequest(0.5);
+        project.setRamRequest(500.0);
+        project.setStorageRequest(1.0);
+    }
+
     private void checkNameOfProject(Project project) {
         long check = projectRep.countByNameIgnoreCaseAndOwnerId(project.getName(), project.getOwnerId());
-        if (check > 1) {
+        if (check > 0) {
             throw new IllegalStateException("Проект с таким именем у пользователя существует");
         }
     }
@@ -111,13 +119,21 @@ public class ProjectService {
 
     @Transactional
     public ProjectDto updateProject(ProjectDto projectDto) throws DeployException {
-        checkProjectExistenceOrThrow(projectDto.getId());
-        Project editedProject = projectMapper.projectDtoToProject(projectDto);
-        setUsersInfo(editedProject);
-        checkNameOfProject(editedProject);
+        Project project = checkProjectExistenceOrThrow(projectDto.getId());
+        checkNameOfProject(project);
+        setChangedFields(project, projectDto);
         //TODO redeploy project
-        projectRep.save(editedProject);
-        return projectMapper.projectToProjectDto(editedProject);
+        projectRep.save(project);
+        return projectMapper.projectToProjectDto(project);
+    }
+
+    private void setChangedFields(Project project, ProjectDto projectDto) {
+        project.setName(projectDto.getName());
+        project.setDescription(projectDto.getDescription());
+        project.setGitUrl(projectDto.getGitUrl());
+        project.setGitBranch(projectDto.getGitBranch());
+        project.setPorts(projectDto.getPorts());
+        project.setEnvs(projectDto.getEnvs());
     }
 
     @Transactional

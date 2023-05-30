@@ -54,7 +54,7 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /management/health/liveness
+              path: /api/management/health/liveness
               port: {{ .Values.application.port }}
               scheme: HTTP
             initialDelaySeconds: 30
@@ -64,7 +64,7 @@ spec:
           readinessProbe:
             failureThreshold: 10
             httpGet:
-              path: /management/health/readiness
+              path: /api/management/health/readiness
               port: {{ .Values.application.port }}
               scheme: HTTP
             initialDelaySeconds: 40
