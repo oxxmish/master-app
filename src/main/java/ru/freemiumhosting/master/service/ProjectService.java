@@ -68,7 +68,7 @@ public class ProjectService {
         setDefaultRequests(project);
         projectRep.save(project);
         //TODO build docker image
-
+        deployService.deployProject(project);
         Thread.sleep(3000);
         //TODO start deploy
         return projectMapper.projectToProjectDto(project);
