@@ -5,14 +5,12 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +19,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.freemiumhosting.master.model.Logs;
 import ru.freemiumhosting.master.repository.LogsRepository;
-import ru.freemiumhosting.master.utils.exception.KuberException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
-
-import static io.fabric8.kubernetes.client.utils.internal.PodOperationUtil.getLog;
 
 @Slf4j
 @Service
@@ -44,11 +39,15 @@ public class KubernetesService {
     @Value("user1")
     private String namespace;
 
-    public void createKanikoPod(Project project) {
+    public void createKanikoPodAndDelete(Project project) {
+        String destinationImage = String.format("freemiumhosting/%s-%s:%s", project.getOwnerName(), project.getName(), project.getCommitHash());
+        project.setRegistryDestination(destinationImage);
         String[] kanikoArgs = createKanikoArgs(project);
 
+        String kanikoPodName = String.format("kaniko-%s", project.getCommitHash());
+
         Pod kanikoPod = new PodBuilder().withNewMetadata()
-                .withName(String.format("kaniko-%s", project.getCommitHash()))
+                .withName(kanikoPodName)
                 .endMetadata()
                 .withNewSpec()
                 .withVolumes(
@@ -74,34 +73,40 @@ public class KubernetesService {
                 .build();
 
 
-        Pod pod = kubernetesClient.pods().inNamespace("default").resource(kanikoPod).create();
+        kubernetesClient.pods().inNamespace("default").resource(kanikoPod).create();
 
         //wait for finish or error
         kubernetesClient.pods().inNamespace("default")
-                .withName(String.format("kaniko-%s", project.getCommitHash()))
-                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 1, TimeUnit.MINUTES);
+                .withName(kanikoPodName)
+                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 5, TimeUnit.MINUTES)
 
-        String logMessage = kubernetesClient.pods().inNamespace("default").withName(String.format("kaniko-%s", project.getCommitHash())).getLog(true);
+
+        String logMessage = kubernetesClient.pods().inNamespace("default").withName(kanikoPodName).getLog(true);
         Logs logs = new Logs(project.getId(), logMessage);
         logsRepository.save(logs);
-
+        kubernetesClient.pods().inNamespace("default").withName(kanikoPodName).delete();
     }
 
     private String[] createKanikoArgs(Project project) {
-        return new String[] {
-            "--dockerfile=Dockerfile",
-            String.format("--context=dir://%s/%s/%s", clonePath, project.getOwnerName(), project.getName()),
-            String.format("--destination=freemiumhosting/%s-%s:%s", project.getOwnerName(), project.getName(), project.getCommitHash()),
-            "--verbosity=debug"
+        return new String[]{
+                "--dockerfile=Dockerfile",
+                String.format("--context=dir://%s/%s/%s", clonePath, project.getOwnerName(), project.getName()),
+                String.format("--destination=%s", project.getRegistryDestination()),
+                "--verbosity=debug"
         };
     }
 
-    public void createDeployment(KubernetesClient client, Project project) {
+    public void createOrReplaceDeployment(Project project) {
         List<EnvVar> envs = Collections.emptyList();
         if (project.getEnvs() != null)
             envs = envService.getEnvsByProject(project).entrySet().stream()
                     .map(entry -> new EnvVarBuilder().withName(entry.getKey()).withValue(entry.getValue()).build()).collect(Collectors.toList());
         log.info("envs ", envs);
+
+        //TODO переделать
+        String containerLocalPortString = Optional.ofNullable(project.getPorts().get(0)).orElse("80");
+        Integer containerLocalPort = Integer.valueOf(containerLocalPortString);
+
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(project.getKubernetesName())
@@ -119,12 +124,11 @@ public class KubernetesService {
                 .endMetadata()
                 .withNewSpec()
                 .addNewContainer()
-                .withName("app")
+                .withName("deployment-"+project.getKubernetesName())
                 .withEnv(envs)
                 .withImage(project.getRegistryDestination())
-                //.withImage("nginx")//для теста локально
                 .addNewPort()
-                .withContainerPort(containerPort)
+                .withContainerPort(containerLocalPort)
                 .endPort()
                 .endContainer()
                 .endSpec()
@@ -132,18 +136,24 @@ public class KubernetesService {
                 .endSpec()
                 .build();
 
-        client.apps().deployments().inNamespace(namespace).create(deployment);
+        kubernetesClient.apps().deployments().inNamespace(project.getOwnerName()).resource(deployment).createOrReplace();
     }
 
-    public void createService(KubernetesClient client, Project project) {
+    public void createOrReplaceService(Project project) {
         HashMap<String, String> annotations = new HashMap<>();
         annotations.put("name", project.getKubernetesName());
         HashMap<String, String> labels = new HashMap<>();
         labels.put("app.kubernetes.io/name", project.getKubernetesName());
+
+        //TODO переделать
+        String containerLocalPortString = Optional.ofNullable(project.getPorts().get(0)).orElse("80");
+        Integer containerLocalPort = Integer.valueOf(containerLocalPortString);
+        generateProjectNodePort(project);
+
         io.fabric8.kubernetes.api.model.Service service = new ServiceBuilder()
                 .withNewMetadata()
                 .withName(project.getKubernetesName())
-                .withNamespace(namespace)
+                .withNamespace(project.getOwnerName())
                 .withAnnotations(annotations)
                 .withLabels(labels)
                 .endMetadata()
@@ -151,32 +161,37 @@ public class KubernetesService {
                 .withType("NodePort")
                 .withPorts()
                 .addNewPort()
-                .withPort(containerPort)
+                .withPort(containerLocalPort)
                 .withNodePort(project.getNodePort())
                 .endPort()
                 .withSelector(labels)
                 .endSpec()
                 .build();
 
-        client.services().inNamespace(namespace).create(service);
+        kubernetesClient.services().inNamespace(project.getOwnerName()).resource(service).createOrReplace();
     }
 
 
-    public void createNamespaceIfDontExist(KubernetesClient client, Project project) {
-        NamespaceList namespaceList = client.namespaces().list();
-        List<String> list =
-                namespaceList
-                        .getItems()
-                        .stream()
-                        .map(v1Namespace -> v1Namespace.getMetadata().getName())
-                        .collect(Collectors.toList());
-        if (!list.contains(namespace)) {
+    public void createNamespaceIfDontExist(Project project) {
+        Resource<Namespace> namespaceResource = kubernetesClient.namespaces().withName(project.getOwnerName());
+        if (namespaceResource == null) {
             Namespace ns = new NamespaceBuilder()
                     .withNewMetadata()
-                    .withName(namespace)
+                    .withName(project.getOwnerName())
                     .endMetadata()
                     .build();
-            client.namespaces().create(ns);
+            kubernetesClient.namespaces().resource(ns).createOrReplace();
+        }
+    }
+
+    public void generateProjectNodePort(Project project) {
+        Random random = new Random();
+        while (project.getNodePort() == null) {
+            Integer nodePort = 30000 + random.nextInt(2767);
+            if (!projectRep.existsByNodePort(nodePort)) {
+                project.setNodePort(nodePort);
+                projectRep.save(project);
+            }
         }
     }
 

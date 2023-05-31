@@ -14,11 +14,11 @@ import ru.freemiumhosting.master.utils.exception.DeployException;
 import ru.freemiumhosting.master.model.Project;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.repository.ProjectRep;
+import ru.freemiumhosting.master.utils.exception.GitCloneException;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,17 +37,14 @@ public class DeployService {
     @SneakyThrows
     public void deployProject(Project project) throws DeployException {
         Path sourceDir = Path.of(clonePath, project.getOwnerName(), project.getName());
-        String commitId = gitService.cloneGitRepo(sourceDir.toFile(),
-                project.getGitUrl(),
-                project.getGitBranch());
-        project.setCommitHash(commitId);
-        if (!Objects.equals(project.getType(), "DOCKER")) {
-            String runArgs = String.join(", ", project.getEnvs());
-            dockerfileBuilderService.createDockerFile(sourceDir, project.getType(), "app", runArgs);
-        }
+        downloadSources(project, sourceDir);
+        kubernetesService.createKanikoPodAndDelete(project);
+        cleanProjectDir(sourceDir);
 
-        kubernetesService.createKanikoPod(project);
-        log.info("Very good");
+        project.setKubernetesName(String.format("%s-%s", project.getOwnerName(), project.getId() ));
+        kubernetesService.createNamespaceIfDontExist(project);
+        kubernetesService.createOrReplaceService(project);
+        kubernetesService.createOrReplaceDeployment(project);
         project.setStatus(ProjectStatus.ACTIVE);
         projectRep.save(project);
 
@@ -64,6 +61,22 @@ public class DeployService {
 //            log.info(String.format("Проект %s успешно задеплоен", project.getName()));
     }
 
+    private void downloadSources(Project project, Path sourceDir) throws GitCloneException {
+        String commitId = gitService.cloneGitRepo(sourceDir.toFile(),
+                project.getGitUrl(),
+                project.getGitBranch());
+        project.setCommitHash(commitId);
+        if (!Objects.equals(project.getType(), "DOCKER")) {
+            String runArgs = String.join(", ", project.getEnvs());
+            dockerfileBuilderService.createDockerFile(sourceDir, project.getType(), "app", runArgs);
+        }
+    }
+
+    @SneakyThrows
+    private void cleanProjectDir(Path sourceDir) {
+        Files.deleteIfExists(sourceDir);
+    }
+
     @Async
     @SneakyThrows
     public void redeployProject(Project project) throws DeployException {
@@ -71,12 +84,4 @@ public class DeployService {
         deployProject(project);
     }
 
-    public void generateProjectNodePort(Project project) {
-        Random random = new Random();
-        while (project.getNodePort() == null) {
-            Integer nodePort = 30000 + random.nextInt(2767);
-            if (!projectRep.existsByNodePort(nodePort))
-                project.setNodePort(nodePort);
-        }
-    }
 }
