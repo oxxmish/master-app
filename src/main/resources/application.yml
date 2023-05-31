@@ -52,7 +52,6 @@ freemium:
     domain-name: freemium-hosting.ml
     git-clone-path: ${GIT_CLONE_TEMP_PATH:/build}
     kubeconfig: ${KUBECONFIG_PATH:./src/main/resources/configs/config.yml}
-    containerPort: ${CONTAINER_PORT:80}
     dockerfile:
       workdir: ${DOCKER_BUILD_WORKDIR:/usr/src/app/backend}
       imageParams: #lowercase
@@ -67,7 +66,3 @@ freemium:
     registry:
       url: ${$REGISTRY_URL:registry.hub.docker.com}
       default-repo: freemiumhosting
-
-logging:
-  level:
-    org.springframework.web: DEBUG

@@ -15,11 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import ru.freemiumhosting.master.model.Logs;
 import ru.freemiumhosting.master.model.ProjectStatus;
 import ru.freemiumhosting.master.model.dto.AdminViewDto;
 import ru.freemiumhosting.master.model.dto.ClusterStatisticsDto;
 import ru.freemiumhosting.master.model.dto.LogsDto;
 import ru.freemiumhosting.master.model.dto.ProjectDto;
+import ru.freemiumhosting.master.repository.LogsRepository;
 import ru.freemiumhosting.master.security.SecurityUser;
 import ru.freemiumhosting.master.service.impl.*;
 import ru.freemiumhosting.master.utils.exception.DeployException;
@@ -37,15 +39,11 @@ import javax.transaction.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-
-    @Value("${freemium.hosting.git-clone-path}")
-    private String clonePath;
-    @Value("${freemium.hosting.domain-name}")
-    private String domainName;
     private final KubernetesService kubernetesService;
     private final DeployService deployService;
     private final ProjectRep projectRep;
     private final ProjectMapper projectMapper = ProjectMapper.INSTANCE;
+    private final LogsRepository logsRepository;
 
     public ProjectDto getProjectById(Long projectId) {
         Project project = projectRep.findByIdAndOwnerId(projectId, SecurityUser.getCurrentUser().getUserId())
@@ -62,6 +60,7 @@ public class ProjectService {
     @SneakyThrows
     @Transactional
     public ProjectDto createProject(ProjectDto projectDto) throws DeployException {
+        log.info("Start creating project with name " + projectDto.getName());
         Project project = projectMapper.projectDtoToProject(projectDto);
         project.setCreatedDate(OffsetDateTime.now());
         setUsersInfo(project);
@@ -71,6 +70,7 @@ public class ProjectService {
 
         deployService.deployProject(project);
 
+        log.info("Finish creating project with name " + projectDto.getName());
         return projectMapper.projectToProjectDto(project);
     }
 
@@ -100,6 +100,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectDto updateProject(ProjectDto projectDto) throws DeployException {
+        log.info("Start updating project with name " + projectDto.getName());
         Project project = checkProjectExistenceOrThrow(projectDto.getId());
         checkNameOfProject(project);
         setChangedFields(project, projectDto);
@@ -107,6 +108,7 @@ public class ProjectService {
         project = projectRep.save(project);
 
         deployService.redeployProject(project);
+        log.info("Finish creating project with name " + projectDto.getName());
         return projectMapper.projectToProjectDto(project);
     }
 
@@ -121,33 +123,43 @@ public class ProjectService {
 
     @Transactional
     public void deleteProject(Long projectId) throws KuberException {
+        log.info("Start deleting project with id " + projectId);
         checkProjectExistenceOrThrow(projectId);
         //TODO delete kuber objects
 //        kubernetesService.deleteKubernetesObjects(project);
         projectRep.deleteById(projectId);
+        log.info("Finish deleting project with id " + projectId);
     }
 
     @Transactional
     @SneakyThrows
     public void rebuildProject(Long projectId) {
+        log.info("Start rebuilding project with id " + projectId);
         Project project = checkProjectExistenceOrThrow(projectId);
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         project = projectRep.save(project);
         deployService.redeployProject(project);
+        log.info("Finish rebuilding project with id " + projectId);
     }
 
     public void startProject(Long id) {
+        log.info("Starting project with id " + id);
         Project project = checkProjectExistenceOrThrow(id);
-        if (!(project.getStatus() == ProjectStatus.STOPPED))
+        if (!(project.getStatus() == ProjectStatus.STOPPED)) {
             throw new InvalidProjectException("Старт проекта можно осуществить только из статуса STOOPED");
+        }
         kubernetesService.startProject(project);
+        log.info("Project started with id " + id);
     }
 
     public void stopProject(Long id) {
+        log.info("Stopping project with id " + id);
         Project project = checkProjectExistenceOrThrow(id);
-        if (!(project.getStatus() == ProjectStatus.ACTIVE))
+        if (!(project.getStatus() == ProjectStatus.ACTIVE)) {
             throw new InvalidProjectException("Стоп проекта можно осуществить только из статуса ACTIVE");
+        }
         kubernetesService.stopProject(project);
+        log.info("Project stopped with id " + id);
     }
 
     public AdminViewDto getAdminView() {
@@ -158,11 +170,10 @@ public class ProjectService {
     public LogsDto getLogs(Long id) {
         Project project = checkProjectExistenceOrThrow(id);
         if (project.getStatus() == ProjectStatus.ACTIVE) {
-            //TODO get kubernetes logs
-            return new LogsDto("Project logs");
+            return new LogsDto(kubernetesService.getLogsOfActiveProject(project));
         } else {
-            //TODO get kaniko logs
-            return new LogsDto("Build logs");
+            String buildLog = logsRepository.findById(project.getId()).map(Logs::getLogMessage).orElse("Build log empty");
+            return new LogsDto(buildLog);
         }
     }
 
@@ -170,51 +181,4 @@ public class ProjectService {
         return projectRep.findByIdAndOwnerId(projectId, SecurityUser.getCurrentUser().getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Не найден редактируемый проект у текущего пользователя"));
     }
-//    @Override
-//    public void deployProject(Project project) throws DeployException {
-//        var projectPath = Path.of(clonePath, project.getName());
-//        String commitHash = gitService.cloneGitRepo(projectPath.toString(), project.getLink(), project.getBranch());
-//        project.setCommitHash(commitHash);
-//        var executableFileName = builderInfoServices.get(project.getLanguage().toLowerCase(Locale.ROOT))
-//                .validateProjectAndGetExecutableFileName(projectPath.toString());
-//        project.setExecutableName(executableFileName);
-//        if (!DOCKER_LANG.equals(project.getLanguage())) {
-//            dockerfileBuilderService.createDockerFile(projectPath.resolve("Dockerfile"),
-//                    project.getLanguage().toLowerCase(Locale.ROOT), executableFileName, "");
-//        }
-//        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-//        project.setCurrentLaunch("true");
-//        projectRep.save(project);
-//        deployService.deployProject(project);
-//    }
-//
-//    public void updateDeploy(Project project) throws DeployException {
-//        kubernetesService.deleteKubernetesObjects(project);
-//        deployProject(project);
-//        if (project.getCurrentLaunch().equals("false")) {
-//            kubernetesService.setDeploymentReplicas(project,0);
-//            project.setStatus(ProjectStatus.STOPPED);
-//        }
-//        else if (project.getCurrentLaunch().equals("true")) {
-//            kubernetesService.setDeploymentReplicas(project,1);
-//            project.setStatus(ProjectStatus.RUNNING);
-
-//        }
-
-
-//    public Project findProjectById(Long projectId) {
-//        return projectRep.findProjectById(projectId);
-
-//
-
-//    }
-//
-//    public void generateProjectNodePort(Project project) {
-//        Random random = new Random();
-//        while (project.getNodePort() == null) {
-//            Integer nodePort = 30000 + random.nextInt(2767);
-//            if (!projectRep.existsByNodePort(nodePort))
-//                project.setNodePort(nodePort);
-//        }
-//    }
 }
