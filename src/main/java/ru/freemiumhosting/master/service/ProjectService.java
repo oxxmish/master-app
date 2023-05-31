@@ -78,6 +78,11 @@ public class ProjectService {
         project.setCpuRequest(0.5);
         project.setRamRequest(500.0);
         project.setStorageRequest(1.0);
+
+        //TODO переделать фронт чтобы ел null
+        project.setCpuConsumption(0.5);
+        project.setStorageConsumption(1.0);
+        project.setRamConsumption(500.0);
     }
 
     private void checkNameOfProject(Project project) {

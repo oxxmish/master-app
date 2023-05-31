@@ -20,8 +20,7 @@ public interface ProjectMapper {
     @Mapping(target = "ownerId", ignore = true)
     @Mapping(target = "ownerName", ignore = true)
     @Mapping(source = "createdDate", target = "createdDate",
-            qualifiedByName = "fromString",
-            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+            qualifiedByName = "fromString")
     Project projectDtoToProject(ProjectDto projectDto);
 
     @Named("fromString")

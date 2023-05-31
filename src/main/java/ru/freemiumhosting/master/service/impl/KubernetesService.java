@@ -73,7 +73,7 @@ public class KubernetesService {
                 .build();
 
 
-        kubernetesClient.pods().inNamespace("default").resource(kanikoPod).create();
+        kubernetesClient.pods().inNamespace("default").resource(kanikoPod).createOrReplace();
 
         //wait for finish or error
         kubernetesClient.pods().inNamespace("default")

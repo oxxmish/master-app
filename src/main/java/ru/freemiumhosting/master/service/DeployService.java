@@ -47,18 +47,6 @@ public class DeployService {
         kubernetesService.createOrReplaceDeployment(project);
         project.setStatus(ProjectStatus.ACTIVE);
         projectRep.save(project);
-
-//            log.info(String.format("Старт деплоя проекта %s", project.getName()));
-//            dockerImageBuilderService.pushImageToRegistry(project);
-//            cleanerService.cleanCachedLibs(Path.of(clonePath, project.getName()).toString());
-//            projectRep.save(project);//сначала сохраняем, чтобы id сгенерировалось
-//            project.setKubernetesName("project" + project.getId());
-//            generateProjectNodePort(project);
-//            kubernetesService.createKubernetesObjects(project);
-//            //TODO: clear dockerhub repository
-//            project.setStatus(ProjectStatus.ACTIVE);
-//            projectRep.save(project);
-//            log.info(String.format("Проект %s успешно задеплоен", project.getName()));
     }
 
     private void downloadSources(Project project, Path sourceDir) throws GitCloneException {
