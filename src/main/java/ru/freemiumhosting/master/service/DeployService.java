@@ -37,14 +37,19 @@ public class DeployService {
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         project = projectRep.save(project);
 
-        dockerImageBuilderService.buildProject(project);
+        project = dockerImageBuilderService.buildProject(project);
 
+        createKubernetesObj(project);
+
+        project.setStatus(ProjectStatus.ACTIVE);
+        projectRep.save(project);
+    }
+
+    public void createKubernetesObj(Project project) {
         project.setKubernetesName(String.format("%s-%s", project.getOwnerName(), project.getId()));
         kubernetesService.createNamespaceIfDontExist(project);
         kubernetesService.createOrReplaceService(project);
         kubernetesService.createOrReplaceDeployment(project);
-        project.setStatus(ProjectStatus.ACTIVE);
-        projectRep.save(project);
     }
 
     @Async

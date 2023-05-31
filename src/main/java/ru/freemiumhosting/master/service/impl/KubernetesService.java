@@ -107,7 +107,7 @@ public class KubernetesService {
         log.info("envs ", envs);
 
         //TODO переделать
-        String containerLocalPortString = Optional.ofNullable(project.getPorts().get(0)).orElse("80");
+        String containerLocalPortString = project.getPorts().stream().findFirst().orElse("80");
         Integer containerLocalPort = Integer.valueOf(containerLocalPortString);
 
         Deployment deployment = new DeploymentBuilder()
@@ -149,7 +149,7 @@ public class KubernetesService {
         labels.put("app.kubernetes.io/name", project.getKubernetesName());
 
         //TODO переделать
-        String containerLocalPortString = Optional.ofNullable(project.getPorts().get(0)).orElse("80");
+        String containerLocalPortString = project.getPorts().stream().findFirst().orElse("80");
         Integer containerLocalPort = Integer.valueOf(containerLocalPortString);
         generateProjectNodePort(project);
 
@@ -176,14 +176,19 @@ public class KubernetesService {
 
 
     public void createNamespaceIfDontExist(Project project) {
-        Resource<Namespace> namespaceResource = kubernetesClient.namespaces().withName(project.getOwnerName());
-        if (namespaceResource == null) {
+        boolean isUserNamespaceNotExist = kubernetesClient.namespaces()
+                .list()
+                .getItems().
+                stream().map(Namespace::getMetadata)
+                .map(ObjectMeta::getName)
+                .noneMatch(i -> i.equals(project.getOwnerName()));
+        if (isUserNamespaceNotExist) {
             Namespace ns = new NamespaceBuilder()
                     .withNewMetadata()
                     .withName(project.getOwnerName())
                     .endMetadata()
                     .build();
-            kubernetesClient.namespaces().resource(ns).createOrReplace();
+            kubernetesClient.namespaces().resource(ns).create();
         }
     }
 
