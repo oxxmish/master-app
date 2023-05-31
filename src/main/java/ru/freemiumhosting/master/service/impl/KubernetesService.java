@@ -78,7 +78,7 @@ public class KubernetesService {
         //wait for finish or error
         kubernetesClient.pods().inNamespace("default")
                 .withName(kanikoPodName)
-                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 5, TimeUnit.MINUTES)
+                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 5, TimeUnit.MINUTES);
 
 
         String logMessage = kubernetesClient.pods().inNamespace("default").withName(kanikoPodName).getLog(true);
