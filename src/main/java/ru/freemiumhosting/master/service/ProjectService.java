@@ -66,10 +66,10 @@ public class ProjectService {
         project.setCreatedDate(OffsetDateTime.now());
         setUsersInfo(project);
         setDefaultRequests(project);
-        projectRep.save(project);
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        project = projectRep.save(project);
         //TODO build docker image
         deployService.deployProject(project);
-        Thread.sleep(3000);
         //TODO start deploy
         return projectMapper.projectToProjectDto(project);
     }
@@ -104,7 +104,7 @@ public class ProjectService {
         checkNameOfProject(project);
         setChangedFields(project, projectDto);
         //TODO redeploy project
-        projectRep.save(project);
+        project = projectRep.save(project);
         return projectMapper.projectToProjectDto(project);
     }
 
@@ -132,7 +132,7 @@ public class ProjectService {
         //TODO rebuild project
         Thread.sleep(2000);
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        projectRep.save(project);
+        project = projectRep.save(project);
         deployService.redeployProject(project);
     }
 

@@ -32,12 +32,12 @@ public class DockerImageBuilderService {
             downloadSources(project, sourceDir);
             kubernetesService.createKanikoPodAndDelete(project, sourceDirName);
         } catch (Exception e) {
-            logAndCleanRecources(project);
+            logAndCleanResources(project);
         }
         return projectRep.save(project);
     }
 
-    private void logAndCleanRecources(Project project) {
+    private void logAndCleanResources(Project project) {
         log.error("Error while building project " + project.getName());
         kubernetesService.deleteKanikoPod(project);
         project.setStatus(ProjectStatus.ERROR);

@@ -34,9 +34,6 @@ public class DeployService {
     @Async
     @SneakyThrows
     public void deployProject(Project project) throws DeployException {
-        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        project = projectRep.save(project);
-
         project = dockerImageBuilderService.buildProject(project);
 
         createKubernetesObj(project);
@@ -50,6 +47,8 @@ public class DeployService {
         kubernetesService.createNamespaceIfDontExist(project);
         kubernetesService.createOrReplaceService(project);
         kubernetesService.createOrReplaceDeployment(project);
+        project.setAppLink("http://toprod.fun:"+project.getNodePort());
+
     }
 
     @Async
