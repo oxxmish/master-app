@@ -30,4 +30,5 @@ public class ProjectDto {
     private Double ramRequest;
     private Double storageConsumption;
     private Double storageRequest;
+    private String appLink;
 }

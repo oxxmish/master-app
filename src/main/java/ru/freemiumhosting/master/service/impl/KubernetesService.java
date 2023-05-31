@@ -246,10 +246,9 @@ public class KubernetesService {
     @Async
     @SneakyThrows
     public void startProject(Project project) {
-        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        project = projectRep.save(project);
-        //TODO replicas = 1
-        Thread.sleep(3000);
+        kubernetesClient.apps().deployments()
+                .inNamespace(project.getOwnerName())
+                .withName(project.getKubernetesName()).scale(1);
         project.setStatus(ProjectStatus.ACTIVE);
         projectRep.save(project);
     }
@@ -257,10 +256,9 @@ public class KubernetesService {
     @Async
     @SneakyThrows
     public void stopProject(Project project) {
-        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        project = projectRep.save(project);
-        //TODO replicas = 0
-        Thread.sleep(3000);
+        kubernetesClient.apps().deployments()
+                .inNamespace(project.getOwnerName())
+                .withName(project.getKubernetesName()).scale(0);
         project.setStatus(ProjectStatus.STOPPED);
         projectRep.save(project);
     }

@@ -68,9 +68,9 @@ public class ProjectService {
         setDefaultRequests(project);
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         project = projectRep.save(project);
-        //TODO build docker image
+
         deployService.deployProject(project);
-        //TODO start deploy
+
         return projectMapper.projectToProjectDto(project);
     }
 
@@ -103,8 +103,10 @@ public class ProjectService {
         Project project = checkProjectExistenceOrThrow(projectDto.getId());
         checkNameOfProject(project);
         setChangedFields(project, projectDto);
-        //TODO redeploy project
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         project = projectRep.save(project);
+
+        deployService.redeployProject(project);
         return projectMapper.projectToProjectDto(project);
     }
 
@@ -129,8 +131,6 @@ public class ProjectService {
     @SneakyThrows
     public void rebuildProject(Long projectId) {
         Project project = checkProjectExistenceOrThrow(projectId);
-        //TODO rebuild project
-        Thread.sleep(2000);
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
         project = projectRep.save(project);
         deployService.redeployProject(project);
