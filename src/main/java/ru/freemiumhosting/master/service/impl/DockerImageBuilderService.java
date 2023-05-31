@@ -1,12 +1,22 @@
 package ru.freemiumhosting.master.service.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
+import ru.freemiumhosting.master.model.ProjectStatus;
+import ru.freemiumhosting.master.repository.ProjectRep;
+import ru.freemiumhosting.master.utils.exception.DeployException;
+import ru.freemiumhosting.master.utils.exception.GitCloneException;
 import ru.freemiumhosting.master.utils.exception.KanikoException;
 import ru.freemiumhosting.master.model.Project;
 
@@ -14,32 +24,37 @@ import ru.freemiumhosting.master.model.Project;
 @RequiredArgsConstructor
 @Slf4j
 public class DockerImageBuilderService {
-
+    private final KubernetesService kubernetesService;
+    private final GitService gitService;
+    private final DockerfileBuilderService dockerfileBuilderService;
+    private final ProjectRep projectRep;
     @Value("${freemium.hosting.git-clone-path}")
-    private String pathToProjects;
-    @Value("${freemium.hosting.registry.url}")
-    private String registryUrl;
-    @Value("${freemium.hosting.registry.default-repo}")
-    private String repository;
+    String clonePath;
 
-    @SneakyThrows
-    public void pushImageToRegistry(Project project) {
-        log.info("Старт загрузки образа в registry");
-        String destination = repository + "/" + project.getName().toLowerCase() + ":" + project.getCommitHash();
-        String kanikoDestination = registryUrl + "/" + destination;
-        Path context = Path.of(pathToProjects, project.getName()).toAbsolutePath().normalize();
-        String dockerPath = context.resolve("Dockerfile").normalize().toString();
-        Process process = new ProcessBuilder()
-            .command("/kaniko/executor", "--context", context.toString(),
-                "--dockerfile", dockerPath, "--destination", kanikoDestination)
-            .directory(context.toFile())
-            .inheritIO()
-            .start();
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new KanikoException("Ошибка при загрузке образа в dockerHub");
+    public void buildProject(Project project) {
+        String sourceDirName = String.valueOf(Instant.now().getEpochSecond());
+        Path sourceDir = Path.of(clonePath, project.getOwnerName(), sourceDirName);
+        try {
+            downloadSources(project, sourceDir);
+            kubernetesService.createKanikoPodAndDelete(project, sourceDirName);
+        } catch (Exception e) {
+            log.error("Error while building project " + project.getName());
+            kubernetesService.deleteKanikoPod(project);
+            project.setStatus(ProjectStatus.ERROR);
+            projectRep.save(project);
+            throw new DeployException("Ошибки при сборке образа");
         }
-        project.setRegistryDestination(destination);
+    }
+
+    private void downloadSources(Project project, Path sourceDir) throws GitCloneException {
+        String commitId = gitService.cloneGitRepo(sourceDir.toFile(),
+                project.getGitUrl(),
+                project.getGitBranch());
+        project.setCommitHash(commitId);
+        if (!Objects.equals(project.getType(), "DOCKER")) {
+            String runArgs = String.join(", ", project.getEnvs());
+            dockerfileBuilderService.createDockerFile(sourceDir, project.getType(), "app", runArgs);
+        }
     }
 
 }

@@ -37,6 +37,7 @@ public class Project {
     private String appLink;
     @Column(name = "commit_hash")
     private String commitHash;
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ProjectStatus status = ProjectStatus.CREATED;
     @Column(name = "owner_id")

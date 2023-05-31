@@ -6,6 +6,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -33,21 +34,14 @@ public class KubernetesService {
     private final LogsRepository logsRepository;
     @Value("${freemium.hosting.git-clone-path}")
     String clonePath;
-    @Value("${freemium.hosting.containerPort}")
-    private Integer containerPort;
 
-    @Value("user1")
-    private String namespace;
-
-    public void createKanikoPodAndDelete(Project project) {
+    public void createKanikoPodAndDelete(Project project, String sourceDir) {
         String destinationImage = String.format("freemiumhosting/%s-%s:%s", project.getOwnerName(), project.getName(), project.getCommitHash());
         project.setRegistryDestination(destinationImage);
-        String[] kanikoArgs = createKanikoArgs(project);
-
-        String kanikoPodName = String.format("kaniko-%s", project.getCommitHash());
+        String[] kanikoArgs = createKanikoArgs(project, sourceDir);
 
         Pod kanikoPod = new PodBuilder().withNewMetadata()
-                .withName(kanikoPodName)
+                .withName(getKanikoPodName(project))
                 .endMetadata()
                 .withNewSpec()
                 .withVolumes(
@@ -61,7 +55,7 @@ public class KubernetesService {
                 )
                 .withRestartPolicy("Never")
                 .addNewContainer()
-                .withName(String.format("kaniko-%s", project.getCommitHash()))
+                .withName(getKanikoPodName(project))
                 .withImage("gcr.io/kaniko-project/executor:debug")
                 .withArgs(kanikoArgs)
                 .withVolumeMounts(
@@ -77,20 +71,29 @@ public class KubernetesService {
 
         //wait for finish or error
         kubernetesClient.pods().inNamespace("default")
-                .withName(kanikoPodName)
-                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Completed") || pod1.getStatus().getPhase().equals("Error"), 5, TimeUnit.MINUTES);
+                .withName(getKanikoPodName(project))
+                .waitUntilCondition(pod1 -> pod1.getStatus().getPhase().equals("Succeeded")
+                        || pod1.getStatus().getPhase().equals("Error"), 2, TimeUnit.MINUTES);
 
 
-        String logMessage = kubernetesClient.pods().inNamespace("default").withName(kanikoPodName).getLog(true);
+        String logMessage = kubernetesClient.pods().inNamespace("default").withName(getKanikoPodName(project)).getLog(true);
         Logs logs = new Logs(project.getId(), logMessage);
         logsRepository.save(logs);
-        kubernetesClient.pods().inNamespace("default").withName(kanikoPodName).delete();
+        deleteKanikoPod(project);
     }
 
-    private String[] createKanikoArgs(Project project) {
+    public void deleteKanikoPod(Project project) {
+        kubernetesClient.pods().inNamespace("default").withName(getKanikoPodName(project)).delete();
+    }
+
+    private static String getKanikoPodName(Project project) {
+        return String.format("kaniko-%s", project.getCommitHash());
+    }
+
+    private String[] createKanikoArgs(Project project, String sourceDir) {
         return new String[]{
                 "--dockerfile=Dockerfile",
-                String.format("--context=dir://%s/%s/%s", clonePath, project.getOwnerName(), project.getName()),
+                String.format("--context=dir://%s/%s/%s", clonePath, project.getOwnerName(), sourceDir),
                 String.format("--destination=%s", project.getRegistryDestination()),
                 "--verbosity=debug"
         };
@@ -190,7 +193,6 @@ public class KubernetesService {
             Integer nodePort = 30000 + random.nextInt(2767);
             if (!projectRep.existsByNodePort(nodePort)) {
                 project.setNodePort(nodePort);
-                projectRep.save(project);
             }
         }
     }
@@ -240,7 +242,7 @@ public class KubernetesService {
     @SneakyThrows
     public void startProject(Project project) {
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        projectRep.save(project);
+        project = projectRep.save(project);
         //TODO replicas = 1
         Thread.sleep(3000);
         project.setStatus(ProjectStatus.ACTIVE);
@@ -251,7 +253,7 @@ public class KubernetesService {
     @SneakyThrows
     public void stopProject(Project project) {
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        projectRep.save(project);
+        project = projectRep.save(project);
         //TODO replicas = 0
         Thread.sleep(3000);
         project.setStatus(ProjectStatus.STOPPED);

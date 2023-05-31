@@ -23,7 +23,10 @@ public class GitService {
             .setBranch(branch)
             .call()
         ) {
-            return git.getRepository().findRef(branch).getObjectId().getName();
+            String commitId = git.getRepository().findRef(branch).getObjectId().getName();
+            git.close();
+            git.gc().call();
+            return commitId;
         } catch (GitAPIException | IOException ex) {
             log.error("Возникла проблема при клонировании git репозитория", ex);
             throw new GitCloneException("Возникла проблема при клонировании git репозитория: " + ex.getMessage());

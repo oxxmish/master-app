@@ -30,42 +30,21 @@ public class DeployService {
     private final CleanerService cleanerService;
     private final ProjectRep projectRep;
     private final KubernetesService kubernetesService;
-    @Value("${freemium.hosting.git-clone-path}")
-    String clonePath;
 
     @Async
     @SneakyThrows
     public void deployProject(Project project) throws DeployException {
         project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
-        projectRep.save(project);
+        project = projectRep.save(project);
 
-        Path sourceDir = Path.of(clonePath, project.getOwnerName(), project.getName());
-        downloadSources(project, sourceDir);
-        kubernetesService.createKanikoPodAndDelete(project);
-        cleanProjectDir(sourceDir);
+        dockerImageBuilderService.buildProject(project);
 
-        project.setKubernetesName(String.format("%s-%s", project.getOwnerName(), project.getId() ));
+        project.setKubernetesName(String.format("%s-%s", project.getOwnerName(), project.getId()));
         kubernetesService.createNamespaceIfDontExist(project);
         kubernetesService.createOrReplaceService(project);
         kubernetesService.createOrReplaceDeployment(project);
         project.setStatus(ProjectStatus.ACTIVE);
         projectRep.save(project);
-    }
-
-    private void downloadSources(Project project, Path sourceDir) throws GitCloneException {
-        String commitId = gitService.cloneGitRepo(sourceDir.toFile(),
-                project.getGitUrl(),
-                project.getGitBranch());
-        project.setCommitHash(commitId);
-        if (!Objects.equals(project.getType(), "DOCKER")) {
-            String runArgs = String.join(", ", project.getEnvs());
-            dockerfileBuilderService.createDockerFile(sourceDir, project.getType(), "app", runArgs);
-        }
-    }
-
-    @SneakyThrows
-    private void cleanProjectDir(Path sourceDir) {
-        Files.deleteIfExists(sourceDir);
     }
 
     @Async

@@ -18,6 +18,6 @@ public class Logs {
     @Column(name = "project_id")
     Long projectId;
 
-    @Column(name = "log_message")
+    @Column(name = "log_message", columnDefinition = "varchar")
     String logMessage;
 }
