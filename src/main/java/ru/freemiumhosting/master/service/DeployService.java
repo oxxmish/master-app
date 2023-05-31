@@ -36,6 +36,9 @@ public class DeployService {
     @Async
     @SneakyThrows
     public void deployProject(Project project) throws DeployException {
+        project.setStatus(ProjectStatus.DEPLOY_IN_PROGRESS);
+        projectRep.save(project);
+
         Path sourceDir = Path.of(clonePath, project.getOwnerName(), project.getName());
         downloadSources(project, sourceDir);
         kubernetesService.createKanikoPodAndDelete(project);
