@@ -9,5 +9,5 @@ public class ClusterStatisticsDto {
     private Double currentRam;
     private Double availibleRam = 2000.0;
     private Double currentStorage;
-    private Double availibleStorage = 20000.0;
+    private Double availibleStorage = 20.0;
 }
