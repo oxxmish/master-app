@@ -164,7 +164,11 @@ public class ProjectService {
 
     public AdminViewDto getAdminView() {
         List<ProjectDto> dtos = projectRep.findAll().stream().map(projectMapper::projectToProjectDto).collect(Collectors.toList());
-        return new AdminViewDto(new ClusterStatisticsDto(), dtos);
+        ClusterStatisticsDto dto = new ClusterStatisticsDto();
+        dto.setCurrentCpu(dtos.stream().mapToDouble(ProjectDto::getCpuRequest).sum());
+        dto.setCurrentRam(dtos.stream().mapToDouble(ProjectDto::getRamRequest).sum());
+        dto.setCurrentStorage(dtos.stream().mapToDouble(ProjectDto::getStorageRequest).sum());
+        return new AdminViewDto(dto, dtos);
     }
 
     public LogsDto getLogs(Long id) {
